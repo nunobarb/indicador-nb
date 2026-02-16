@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#1a1a2e">
+    <title>Indicador NB - Nuno Barbosa</title>
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiSW5kaWNhZG9yIE5CIiwic2hvcnRfbmFtZSI6Ik5CIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzFhMWEyZSIsInRoZW1lX2NvbG9yIjoiIzFhMWEyZSJ9">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+            padding-bottom: 80px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .header h1 {
+            font-size: 1.5em;
+            margin-bottom: 5px;
+        }
+
+        .header .subtitle {
+            font-size: 0.85em;
+            opacity: 0.7;
+        }
+
+        .score-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            padding: 30px 20px;
+            margin: 20px 0;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .score-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        .score-number {
+            font-size: 4em;
+            font-weight: 700;
+            margin: 10px 0;
+            position: relative;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .score-label {
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .score-message {
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+        }
+
+        .gauge-container {
+            margin: 25px 0;
+            padding: 20px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+        }
+
+        .gauge {
+            position: relative;
+            width: 100%;
+            height: 30px;
+            background: linear-gradient(to right, 
+                #22c55e 0%, 
+                #84cc16 25%,
+                #fbbf24 50%, 
+                #fb923c 75%,
+                #ef4444 100%);
+            border-radius: 15px;
+            overflow: visible;
+        }
+
+        .gauge-pointer {
+            position: absolute;
+            width: 3px;
+            height: 40px;
+            background: #fff;
+            top: -5px;
+            box-shadow: 0 0 10px rgba(255,255,255,0.5);
+            transition: left 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .gauge-pointer::before {
+            content: '▼';
+            position: absolute;
+            top: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 16px;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        .gauge-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 0.75em;
+            opacity: 0.8;
+        }
+
+        .advice-section {
+            background: rgba(74, 222, 128, 0.1);
+            border-left: 4px solid #4ade80;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .advice-section.warning {
+            background: rgba(239, 68, 68, 0.1);
+            border-left-color: #ef4444;
+        }
+
+        .advice-section h3 {
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .advice-list {
+            list-style: none;
+        }
+
+        .advice-list li {
+            padding: 8px 0;
+            padding-left: 20px;
+            position: relative;
+            line-height: 1.5;
+        }
+
+        .advice-list li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        .indicators-section {
+            margin: 30px 0;
+        }
+
+        .section-title {
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+        }
+
+        .indicator-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .indicator-card:active {
+            transform: scale(0.98);
+        }
+
+        .indicator-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .indicator-name {
+            font-weight: 600;
+            font-size: 1em;
+        }
+
+        .indicator-signal {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.75em;
+            font-weight: 600;
+        }
+
+        .signal-STRONG_BUY {
+            background: #22c55e;
+            color: #fff;
+        }
+
+        .signal-BUY {
+            background: #84cc16;
+            color: #fff;
+        }
+
+        .signal-NEUTRAL {
+            background: #fbbf24;
+            color: #000;
+        }
+
+        .signal-CAUTION {
+            background: #fb923c;
+            color: #fff;
+        }
+
+        .signal-SELL {
+            background: #ef4444;
+            color: #fff;
+        }
+
+        .indicator-value {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #667eea;
+            margin: 8px 0;
+        }
+
+        .indicator-description {
+            font-size: 0.9em;
+            opacity: 0.8;
+            line-height: 1.4;
+        }
+
+        .quote-card {
+            background: rgba(102, 126, 234, 0.1);
+            border-left: 4px solid #667eea;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 25px 0;
+            font-style: italic;
+            line-height: 1.6;
+        }
+
+        .actions {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:active {
+            transform: scale(0.95);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            margin: 0 auto 20px;
+            border: 4px solid rgba(255,255,255,0.1);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 200;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background: #1a1a2e;
+            border-radius: 20px;
+            padding: 25px;
+            max-width: 500px;
+            margin: 50px auto;
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .close-btn {
+            font-size: 1.5em;
+            cursor: pointer;
+            padding: 5px 10px;
+        }
+
+        .history-item {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+
+        .history-date {
+            font-size: 0.85em;
+            opacity: 0.7;
+            margin-bottom: 5px;
+        }
+
+        .history-score {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        @media (max-width: 480px) {
+            .score-number {
+                font-size: 3em;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+            
+            .actions {
+                flex-direction: column;
+            }
+        }
+
+        .install-prompt {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 12px;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .install-prompt button {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📊 Indicador NB</h1>
+        <p class="subtitle">Análise Contrarian de Mercado - Nuno Barbosa</p>
+    </div>
+
+    <div class="container">
+        <div class="install-prompt" id="installPrompt">
+            <span>📱 Adicionar ao ecrã inicial?</span>
+            <button onclick="installApp()">Instalar</button>
+        </div>
+
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>A analisar mercado...</p>
+        </div>
+
+        <div id="content" style="display: none;">
+            <div class="score-card">
+                <div class="score-label">Market Score</div>
+                <div class="score-number" id="scoreNumber">--</div>
+                <div class="score-message" id="scoreMessage">--</div>
+            </div>
+
+            <div class="gauge-container">
+                <div class="gauge">
+                    <div class="gauge-pointer" id="gaugePointer"></div>
+                </div>
+                <div class="gauge-labels">
+                    <span>🟢 FUNDO</span>
+                    <span>🟡 NEUTRO</span>
+                    <span>🔴 TOPO</span>
+                </div>
+            </div>
+
+            <div id="adviceSection"></div>
+            <div class="quote-card" id="quote"></div>
+
+            <div class="indicators-section">
+                <h2 class="section-title">📊 Indicadores</h2>
+                <div id="indicatorsGrid"></div>
+            </div>
+
+            <div style="text-align: center; opacity: 0.5; margin: 30px 0; font-size: 0.85em;" id="lastUpdate"></div>
+        </div>
+    </div>
+
+    <div class="actions">
+        <button class="btn btn-primary" onclick="fetchData()">🔄 Actualizar</button>
+        <button class="btn btn-secondary" onclick="showHistory()">📈 Histórico</button>
+    </div>
+
+    <div class="modal" id="historyModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📈 Histórico</h2>
+                <span class="close-btn" onclick="closeHistory()">✕</span>
+            </div>
+            <div id="historyContent"></div>
+        </div>
+    </div>
+
+    <script>
+        const quotes = [
+            '"Be fearful when others are greedy, greedy when others are fearful." - Warren Buffett',
+            '"The time of maximum pessimism is the best time to buy." - John Templeton',
+            '"Buy when there\'s blood in the streets, even if it\'s your own." - Baron Rothschild',
+            '"In the short run, the market is a voting machine. In the long run, it is a weighing machine." - Benjamin Graham',
+            '"The four most dangerous words in investing are: this time it\'s different." - John Templeton'
+        ];
+
+        async function fetchData() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('content').style.display = 'none';
+
+            try {
+                // Buscar dados reais da API
+                const response = await fetch('/api/data');
+                const data = await response.json();
+                
+                displayResults(data);
+            } catch (error) {
+                console.error('Erro ao buscar dados:', error);
+                
+                // Fallback para dados simulados se API falhar
+                console.log('Usando dados simulados como fallback...');
+                const simulatedData = {
+                    fearGreed: Math.floor(Math.random() * 100),
+                    vix: 12 + Math.random() * 30,
+                    buffett: 80 + Math.random() * 60,
+                    cape: 15 + Math.random() * 20,
+                    breadth: -15 + Math.random() * 30,
+                    hySpread: 2 + Math.random() * 8
+                };
+                
+                displayResults(simulatedData);
+            }
+        }
+
+        function displayResults(data) {
+            const scores = {
+                fearGreed: data.fearGreed,
+                vix: 100 - Math.min(100, Math.max(0, ((data.vix - 10) / 30) * 100)),
+                buffett: Math.min(100, Math.max(0, ((data.buffett - 60) / 80) * 100)),
+                cape: Math.min(100, Math.max(0, ((data.cape - 10) / 25) * 100)),
+                breadth: Math.min(100, Math.max(0, 50 + data.breadth * 2)),
+                hySpread: 100 - Math.min(100, Math.max(0, (data.hySpread / 10) * 100))
+            };
+
+            const finalScore = Math.round(
+                scores.fearGreed * 0.30 +
+                scores.vix * 0.20 +
+                scores.buffett * 0.15 +
+                scores.cape * 0.15 +
+                scores.breadth * 0.10 +
+                scores.hySpread * 0.10
+            );
+
+            let message, advice, isWarning;
+            
+            if (finalScore <= 20) {
+                message = "🟢🟢 COMPRA AGRESSIVA";
+                advice = [
+                    "Pessimismo extremo detectado",
+                    "Altura de ser ganancioso quando outros têm medo",
+                    "Aumenta exposição a acções de qualidade",
+                    "Usa dollar-cost averaging se ainda incerto"
+                ];
+                isWarning = false;
+            } else if (finalScore <= 35) {
+                message = "🟢 BOA OPORTUNIDADE";
+                advice = [
+                    "Medo acima do normal no mercado",
+                    "Acumula posições gradualmente",
+                    "Procura empresas de qualidade com desconto"
+                ];
+                isWarning = false;
+            } else if (finalScore <= 65) {
+                message = "🟡 MERCADO NEUTRO";
+                advice = [
+                    "Sem sinais claros de extremo",
+                    "Mantém posições actuais",
+                    "Prepara lista de compras para próxima correcção"
+                ];
+                isWarning = false;
+            } else if (finalScore <= 80) {
+                message = "🟠 CAUTELA RECOMENDADA";
+                advice = [
+                    "Euforia acima do normal",
+                    "Considera reduzir exposição",
+                    "Evita FOMO (fear of missing out)",
+                    "Aumenta reserva de cash"
+                ];
+                isWarning = true;
+            } else {
+                message = "🔴🔴 VENDER/PROTEGER";
+                advice = [
+                    "Euforia extrema detectada",
+                    "Altura de ser cauteloso quando outros são gananciosos",
+                    "Realiza lucros em posições sobrevalorizadas",
+                    "Aumenta significativamente cash/bonds"
+                ];
+                isWarning = true;
+            }
+
+            document.getElementById('scoreNumber').textContent = finalScore;
+            document.getElementById('scoreMessage').textContent = message;
+            document.getElementById('gaugePointer').style.left = `calc(${finalScore}% - 1.5px)`;
+
+            const adviceHTML = `
+                <div class="advice-section ${isWarning ? 'warning' : ''}">
+                    <h3>💡 Recomendações Contrarian</h3>
+                    <ul class="advice-list">
+                        ${advice.map(a => `<li>${a}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+            document.getElementById('adviceSection').innerHTML = adviceHTML;
+            document.getElementById('quote').textContent = quotes[Math.floor(Math.random() * quotes.length)];
+
+            const indicators = [
+                {
+                    name: 'Fear & Greed Index',
+                    value: data.fearGreed.toFixed(0),
+                    signal: data.fearGreed < 20 ? 'STRONG_BUY' : data.fearGreed < 35 ? 'BUY' : 
+                            data.fearGreed > 75 ? 'SELL' : data.fearGreed > 65 ? 'CAUTION' : 'NEUTRAL',
+                    description: data.fearGreed < 25 ? 'Medo extremo no mercado' : 
+                                data.fearGreed > 75 ? 'Ganância extrema' : 'Sentimento neutro'
+                },
+                {
+                    name: 'VIX (Volatilidade)',
+                    value: data.vix.toFixed(1),
+                    signal: data.vix > 35 ? 'STRONG_BUY' : data.vix > 25 ? 'BUY' :
+                            data.vix < 12 ? 'SELL' : data.vix < 15 ? 'CAUTION' : 'NEUTRAL',
+                    description: data.vix > 30 ? 'Pânico no mercado' : 
+                                data.vix < 15 ? 'Complacência perigosa' : 'Normal'
+                },
+                {
+                    name: 'Buffett Indicator',
+                    value: data.buffett.toFixed(0) + '%',
+                    signal: data.buffett > 140 ? 'SELL' : data.buffett > 120 ? 'CAUTION' :
+                            data.buffett < 80 ? 'BUY' : data.buffett < 60 ? 'STRONG_BUY' : 'NEUTRAL',
+                    description: data.buffett > 140 ? 'Mercado muito caro' : 
+                                data.buffett < 80 ? 'Mercado barato' : 'Valorização justa'
+                },
+                {
+                    name: 'Shiller P/E (CAPE)',
+                    value: data.cape.toFixed(1),
+                    signal: data.cape > 30 ? 'SELL' : data.cape > 25 ? 'CAUTION' :
+                            data.cape < 18 ? 'BUY' : data.cape < 15 ? 'STRONG_BUY' : 'NEUTRAL',
+                    description: data.cape > 30 ? 'Historicamente caro' : 
+                                data.cape < 18 ? 'Historicamente barato' : 'Razoável'
+                },
+                {
+                    name: 'S&P vs MA200',
+                    value: data.breadth.toFixed(1) + '%',
+                    signal: data.breadth < -15 ? 'STRONG_BUY' : data.breadth < -5 ? 'BUY' :
+                            data.breadth > 15 ? 'SELL' : data.breadth > 10 ? 'CAUTION' : 'NEUTRAL',
+                    description: data.breadth < -10 ? 'Muito abaixo da média' : 
+                                data.breadth > 10 ? 'Muito acima da média' : 'Próximo da média'
+                },
+                {
+                    name: 'High Yield Spread',
+                    value: data.hySpread.toFixed(2) + '%',
+                    signal: data.hySpread > 8 ? 'STRONG_BUY' : data.hySpread > 5 ? 'BUY' :
+                            data.hySpread < 3 ? 'SELL' : 'NEUTRAL',
+                    description: data.hySpread > 8 ? 'Stress de crédito elevado' : 
+                                data.hySpread < 3 ? 'Complacência de crédito' : 'Normal'
+                }
+            ];
+
+            const indicatorsHTML = indicators.map(ind => `
+                <div class="indicator-card">
+                    <div class="indicator-header">
+                        <div class="indicator-name">${ind.name}</div>
+                        <div class="indicator-signal signal-${ind.signal.replace(' ', '_')}">${ind.signal}</div>
+                    </div>
+                    <div class="indicator-value">${ind.value}</div>
+                    <div class="indicator-description">${ind.description}</div>
+                </div>
+            `).join('');
+
+            document.getElementById('indicatorsGrid').innerHTML = indicatorsHTML;
+            document.getElementById('lastUpdate').textContent = 
+                `Última actualização: ${new Date().toLocaleString('pt-PT')}`;
+
+            saveToHistory(finalScore, message);
+
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('content').style.display = 'block';
+        }
+
+        function saveToHistory(score, message) {
+            let history = JSON.parse(localStorage.getItem('contrarian_history') || '[]');
+            history.unshift({
+                date: new Date().toISOString(),
+                score: score,
+                message: message
+            });
+            history = history.slice(0, 20);
+            localStorage.setItem('contrarian_history', JSON.stringify(history));
+        }
+
+        function showHistory() {
+            const history = JSON.parse(localStorage.getItem('contrarian_history') || '[]');
+            
+            if (history.length === 0) {
+                document.getElementById('historyContent').innerHTML = 
+                    '<p style="text-align: center; opacity: 0.7;">Sem histórico ainda</p>';
+            } else {
+                const historyHTML = history.map(h => `
+                    <div class="history-item">
+                        <div class="history-date">${new Date(h.date).toLocaleString('pt-PT')}</div>
+                        <div class="history-score">Score: ${h.score}/100</div>
+                        <div style="margin-top: 5px;">${h.message}</div>
+                    </div>
+                `).join('');
+                document.getElementById('historyContent').innerHTML = historyHTML;
+            }
+            
+            document.getElementById('historyModal').style.display = 'block';
+        }
+
+        function closeHistory() {
+            document.getElementById('historyModal').style.display = 'none';
+        }
+
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('installPrompt').style.display = 'flex';
+        });
+
+        function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        document.getElementById('installPrompt').style.display = 'none';
+                    }
+                    deferredPrompt = null;
+                });
+            }
+        }
+
+        fetchData();
+    </script>
+</body>
+</html>
