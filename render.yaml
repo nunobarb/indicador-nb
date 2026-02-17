@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: indicador-nb
+    runtime: python
+    buildCommand: pip install -r requirements_backend.txt
+    startCommand: gunicorn backend_api:app
+    autoDeploy: true
+    envVars:
+      - key: ALPHA_VANTAGE_KEY
+        sync: false
+      - key: FRED_KEY
+        sync: false

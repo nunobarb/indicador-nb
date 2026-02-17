@@ -411,7 +411,12 @@
             }
             
             .actions {
-                flex-direction: column;
+                gap: 6px;
+            }
+
+            .btn {
+                font-size: 0.85em;
+                padding: 12px 8px;
             }
         }
 
@@ -486,6 +491,103 @@
     <div class="actions">
         <button class="btn btn-primary" onclick="fetchData()">🔄 Actualizar</button>
         <button class="btn btn-secondary" onclick="showHistory()">📈 Histórico</button>
+        <button class="btn btn-secondary" onclick="showAbout()">ℹ️ Sobre</button>
+    </div>
+
+    <!-- Modal Sobre -->
+    <div class="modal" id="aboutModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>ℹ️ Sobre os Indicadores</h2>
+                <span class="close-btn" onclick="closeAbout()">✕</span>
+            </div>
+            <div style="line-height: 1.7; font-size: 0.95em;">
+
+                <div style="background:rgba(102,126,234,0.15); border-left:4px solid #667eea; border-radius:8px; padding:15px; margin-bottom:20px;">
+                    <strong>📖 Filosofia Contrarian</strong><br><br>
+                    A ideia central é simples: os mercados exageram sempre. Quando toda a gente tem medo, os preços caem mais do que deviam. Quando toda a gente está eufórica, sobem mais do que deviam. O contrarian aproveita esses exageros.
+                    <br><br>
+                    O score de 0 a 100 agrega vários sinais. Perto de 0 significa pessimismo extremo, historicamente associado a boas entradas. Perto de 100 significa euforia extrema, historicamente associado a correcções.
+                </div>
+
+                <!-- Indicador 1 -->
+                <div style="background:rgba(255,255,255,0.05); border-radius:12px; padding:18px; margin-bottom:15px;">
+                    <div style="font-size:1.1em; font-weight:700; margin-bottom:8px;">😱 Fear & Greed Index</div>
+                    <div style="color:#667eea; font-size:0.85em; margin-bottom:10px;">Peso: 30% · Fonte: CNN / Alternative.me</div>
+                    <p>Criado pela CNN em 2012, mede o sentimento do mercado americano de 0 (medo extremo) a 100 (ganância extrema). Agrega 7 sub-indicadores: momentum do mercado, força das acções, amplitude do mercado, opções put vs call, procura de bonds de alto risco, sazonalidade e volatilidade (VIX).</p>
+                    <p style="margin-top:10px; opacity:0.8;">Para o contrarian, <strong>valores abaixo de 20 são oportunidade de compra</strong>. Em Março de 2020 chegou a 12. Quem comprou nessa altura ganhou mais de 80% em 12 meses.</p>
+                    <div style="margin-top:10px; font-size:0.82em; opacity:0.6;">🔗 alternative.me/crypto/fear-and-greed-index</div>
+                </div>
+
+                <!-- Indicador 2 -->
+                <div style="background:rgba(255,255,255,0.05); border-radius:12px; padding:18px; margin-bottom:15px;">
+                    <div style="font-size:1.1em; font-weight:700; margin-bottom:8px;">⚡ VIX — Índice de Volatilidade</div>
+                    <div style="color:#667eea; font-size:0.85em; margin-bottom:10px;">Peso: 20% · Fonte: CBOE / Alpha Vantage</div>
+                    <p>Criado pela CBOE (Chicago Board Options Exchange) em 1993, o VIX mede a volatilidade esperada pelo mercado para os próximos 30 dias, calculado a partir dos preços das opções do S&P 500. É chamado o "índice do medo".</p>
+                    <p style="margin-top:10px; opacity:0.8;">Para o contrarian, o raciocínio é invertido: <strong>VIX acima de 35 significa pânico, logo oportunidade</strong>. VIX abaixo de 12 significa complacência perigosa. Em Março 2020 chegou a 82. Em 2017 andou abaixo de 10, antes de uma correcção violenta.</p>
+                    <div style="margin-top:10px; font-size:0.82em; opacity:0.6;">🔗 cboe.com/vix</div>
+                </div>
+
+                <!-- Indicador 3 -->
+                <div style="background:rgba(255,255,255,0.05); border-radius:12px; padding:18px; margin-bottom:15px;">
+                    <div style="font-size:1.1em; font-weight:700; margin-bottom:8px;">🏦 Buffett Indicator</div>
+                    <div style="color:#667eea; font-size:0.85em; margin-bottom:10px;">Peso: 15% · Fonte: FRED (Federal Reserve)</div>
+                    <p>Warren Buffett referiu este indicador numa entrevista à Fortune em 2001, dizendo ser "provavelmente o melhor indicador único de avaliação do mercado". Calcula a capitalização bolsista total dos EUA a dividir pelo PIB.</p>
+                    <p style="margin-top:10px; opacity:0.8;"><strong>Leitura:</strong> abaixo de 80% o mercado está barato historicamente. Acima de 140% está em território de bolha (2000, 2021). A média histórica ronda os 95-100%.</p>
+                    <div style="margin-top:10px; font-size:0.82em; opacity:0.6;">🔗 fred.stlouisfed.org · currentmarketvaluation.com</div>
+                </div>
+
+                <!-- Indicador 4 -->
+                <div style="background:rgba(255,255,255,0.05); border-radius:12px; padding:18px; margin-bottom:15px;">
+                    <div style="font-size:1.1em; font-weight:700; margin-bottom:8px;">📐 Shiller P/E — CAPE Ratio</div>
+                    <div style="color:#667eea; font-size:0.85em; margin-bottom:10px;">Peso: 15% · Fonte: Robert Shiller (Yale)</div>
+                    <p>Desenvolvido pelo economista e Nobel Robert Shiller, o CAPE (Cyclically Adjusted Price-to-Earnings) divide o preço actual do S&P 500 pela média dos lucros dos últimos 10 anos, ajustados à inflação. Elimina a volatilidade dos lucros de curto prazo.</p>
+                    <p style="margin-top:10px; opacity:0.8;">A média histórica é cerca de 17. <strong>Acima de 30 o mercado está historicamente caro</strong> (1929 estava em 33, 2000 em 44, 2021 em 38). Abaixo de 15 está muito barato (2009 chegou a 13).</p>
+                    <div style="margin-top:10px; font-size:0.82em; opacity:0.6;">🔗 multpl.com/shiller-pe · shillerdata.com</div>
+                </div>
+
+                <!-- Indicador 5 -->
+                <div style="background:rgba(255,255,255,0.05); border-radius:12px; padding:18px; margin-bottom:15px;">
+                    <div style="font-size:1.1em; font-weight:700; margin-bottom:8px;">📉 S&P 500 vs Média 200 Dias</div>
+                    <div style="color:#667eea; font-size:0.85em; margin-bottom:10px;">Peso: 10% · Fonte: Alpha Vantage</div>
+                    <p>A média móvel de 200 dias é um dos indicadores técnicos mais usados no mundo. Representa a tendência de longo prazo. Quando o mercado está muito afastado desta média, tende a reverter.</p>
+                    <p style="margin-top:10px; opacity:0.8;"><strong>Para o contrarian:</strong> quando o S&P 500 está mais de 15% abaixo da MA200 (oversold extremo), é sinal de oportunidade. Quando está mais de 15% acima (overbought extremo), cautela. Não prediz o momento exacto, mas o contexto.</p>
+                    <div style="margin-top:10px; font-size:0.82em; opacity:0.6;">🔗 Dados via Alpha Vantage API</div>
+                </div>
+
+                <!-- Indicador 6 -->
+                <div style="background:rgba(255,255,255,0.05); border-radius:12px; padding:18px; margin-bottom:15px;">
+                    <div style="font-size:1.1em; font-weight:700; margin-bottom:8px;">📊 High Yield Spread</div>
+                    <div style="color:#667eea; font-size:0.85em; margin-bottom:10px;">Peso: 10% · Fonte: FRED / ICE BofA</div>
+                    <p>Mede a diferença entre a yield dos junk bonds (obrigações de alto risco) e os Treasuries americanos (considerados sem risco). Quando os investidores têm medo, exigem um prémio maior para emprestar dinheiro a empresas arriscadas.</p>
+                    <p style="margin-top:10px; opacity:0.8;"><strong>Para o contrarian:</strong> spread acima de 8% indica stress de crédito severo e é historicamente associado a boas entradas (2008, 2020). Spread abaixo de 3% indica complacência excessiva — os investidores não estão a pedir prémio suficiente pelo risco.</p>
+                    <div style="margin-top:10px; font-size:0.82em; opacity:0.6;">🔗 fred.stlouisfed.org · série BAMLH0A0HYM2</div>
+                </div>
+
+                <!-- Como se calcula o score -->
+                <div style="background:rgba(102,126,234,0.1); border-left:4px solid #667eea; border-radius:8px; padding:15px; margin-bottom:20px;">
+                    <strong>🧮 Como se Calcula o Score Final</strong><br><br>
+                    Cada indicador é normalizado para uma escala de 0 a 100 e depois combinado com ponderações:
+                    <br><br>
+                    <code style="font-size:0.85em; opacity:0.9;">
+                    Fear & Greed → 30%<br>
+                    VIX → 20%<br>
+                    Buffett Indicator → 15%<br>
+                    Shiller P/E → 15%<br>
+                    S&P vs MA200 → 10%<br>
+                    HY Spread → 10%
+                    </code>
+                    <br><br>
+                    Score 0-35 = zona de compra. Score 65-100 = zona de venda. O meio é território neutro, onde não vale a pena agir.
+                </div>
+
+                <!-- Aviso -->
+                <div style="background:rgba(251,191,36,0.1); border-left:4px solid #fbbf24; border-radius:8px; padding:15px; margin-bottom:10px; font-size:0.88em; opacity:0.9;">
+                    ⚠️ <strong>Aviso:</strong> Este indicador é uma ferramenta de análise pessoal, não aconselhamento financeiro. Os mercados podem permanecer irracionais muito tempo. Usa sempre o teu próprio juízo e, se necessário, consulta um profissional.
+                </div>
+
+            </div>
+        </div>
     </div>
 
     <div class="modal" id="historyModal">
@@ -697,6 +799,14 @@
             });
             history = history.slice(0, 20);
             localStorage.setItem('contrarian_history', JSON.stringify(history));
+        }
+
+        function showAbout() {
+            document.getElementById('aboutModal').style.display = 'block';
+        }
+
+        function closeAbout() {
+            document.getElementById('aboutModal').style.display = 'none';
         }
 
         function showHistory() {
