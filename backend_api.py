@@ -14,16 +14,11 @@ from datetime import datetime, timedelta
 app = Flask(__name__)
 CORS(app)
 
-# ============================================================================
-# CONFIGURAÇÃO
-# ============================================================================
-
 API_KEYS = {
     'alpha_vantage': os.getenv('ALPHA_VANTAGE_KEY', 'DEMO'),
     'fred': os.getenv('FRED_KEY', 'YOUR_FRED_KEY'),
 }
 
-# Cache 6 horas - poupa os limites das APIs gratuitas
 _cache = {}
 CACHE_DURATION = timedelta(hours=6)
 
@@ -37,10 +32,6 @@ def get_cached(key):
 def set_cached(key, data):
     _cache[key] = (data, datetime.now())
 
-
-# ============================================================================
-# INDICADORES - TODOS AUTOMÁTICOS
-# ============================================================================
 
 def get_fear_greed_index():
     cached = get_cached('fear_greed')
@@ -66,15 +57,17 @@ def get_fear_greed_index():
 
 
 def get_vix():
+    """VIX via FRED - mais fiável que Alpha Vantage para este símbolo"""
     cached = get_cached('vix')
     if cached: return cached
     try:
-        url = f'https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=VIX&apikey={API_KEYS["alpha_vantage"]}'
+        # VIXCLS = VIX closing price, série oficial do FRED
+        url = f'https://api.stlouisfed.org/fred/series/observations?series_id=VIXCLS&api_key={API_KEYS["fred"]}&file_type=json&limit=1&sort_order=desc'
         r = requests.get(url, timeout=10)
         data = r.json()
-        if 'Global Quote' not in data or '05. price' not in data['Global Quote']:
-            raise Exception("VIX não disponível")
-        vix = float(data['Global Quote']['05. price'])
+        # Filtrar valores inválidos (FRED usa '.' para dias sem dados)
+        obs = [o for o in data['observations'] if o['value'] != '.']
+        vix = float(obs[0]['value'])
         result = {
             'value': round(vix, 1),
             'signal': 'STRONG_BUY' if vix > 35 else 'BUY' if vix > 25 else
@@ -82,6 +75,7 @@ def get_vix():
             'description': f'VIX: {vix:.1f}'
         }
         set_cached('vix', result)
+        print(f"VIX: {vix}")
         return result
     except Exception as e:
         print(f"Erro VIX: {e}")
@@ -89,23 +83,30 @@ def get_vix():
 
 
 def get_sp500_vs_ma200():
+    """S&P 500 via FRED (SP500 series) e calcula desvio manualmente"""
     cached = get_cached('sp500_ma200')
     if cached: return cached
     try:
-        url = f'https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=SPY&apikey={API_KEYS["alpha_vantage"]}'
+        fred_key = API_KEYS['fred']
+        # Buscar últimos 300 dias do S&P 500 para calcular MA200
+        url = f'https://api.stlouisfed.org/fred/series/observations?series_id=SP500&api_key={fred_key}&file_type=json&limit=300&sort_order=desc'
         r = requests.get(url, timeout=10)
-        price = float(r.json()['Global Quote']['05. price'])
-        url_sma = f'https://www.alphavantage.co/query?function=SMA&symbol=SPY&interval=daily&time_period=200&series_type=close&apikey={API_KEYS["alpha_vantage"]}'
-        r_sma = requests.get(url_sma, timeout=10)
-        sma_200 = float(list(r_sma.json()['Technical Analysis: SMA'].values())[0]['SMA'])
-        pct = ((price / sma_200) - 1) * 100
+        data = r.json()
+        # Filtrar valores válidos
+        obs = [float(o['value']) for o in data['observations'] if o['value'] != '.']
+        if len(obs) < 200:
+            raise Exception("Dados insuficientes para MA200")
+        price = obs[0]           # Preço mais recente
+        ma200 = sum(obs[:200]) / 200  # Média dos últimos 200 dias
+        pct = ((price / ma200) - 1) * 100
         result = {
             'value': round(pct, 1),
             'signal': 'STRONG_BUY' if pct < -15 else 'BUY' if pct < -5 else
                       'SELL' if pct > 15 else 'CAUTION' if pct > 10 else 'NEUTRAL',
-            'description': f'S&P vs MA200: {pct:+.1f}%'
+            'description': f'S&P vs MA200: {pct:+.1f}% (${price:.0f})'
         }
         set_cached('sp500_ma200', result)
+        print(f"S&P vs MA200: {pct:+.1f}%")
         return result
     except Exception as e:
         print(f"Erro S&P/MA200: {e}")
@@ -125,10 +126,11 @@ def get_shiller_pe():
         if match:
             cape = float(match.group(1))
         else:
-            # Fonte 2: FRED (série CAPE do Shiller)
-            url_fred = f'https://api.stlouisfed.org/fred/series/observations?series_id=CAPE&api_key={API_KEYS["fred"]}&file_type=json&limit=1&sort_order=desc'
+            # Fonte 2: FRED série CAPE
+            url_fred = f'https://api.stlouisfed.org/fred/series/observations?series_id=CAPE&api_key={API_KEYS["fred"]}&file_type=json&limit=5&sort_order=desc'
             r2 = requests.get(url_fred, timeout=10)
-            cape = float(r2.json()['observations'][0]['value'])
+            obs = [o for o in r2.json()['observations'] if o['value'] != '.']
+            cape = float(obs[0]['value'])
         result = {
             'value': round(cape, 1),
             'signal': 'SELL' if cape > 30 else 'CAUTION' if cape > 25 else
@@ -144,17 +146,24 @@ def get_shiller_pe():
 
 
 def get_buffett_indicator():
+    """Buffett Indicator via FRED - usa DDDM (Wilshire 5000 market cap em USD)"""
     cached = get_cached('buffett')
     if cached: return cached
     try:
         fred_key = API_KEYS['fred']
-        # Wilshire 5000 = capitalização total do mercado americano (FRED)
-        url_w = f'https://api.stlouisfed.org/fred/series/observations?series_id=WILL5000PR&api_key={fred_key}&file_type=json&limit=1&sort_order=desc'
-        wilshire = float(requests.get(url_w, timeout=10).json()['observations'][0]['value'])
-        # PIB dos EUA (FRED) - em biliões
-        url_gdp = f'https://api.stlouisfed.org/fred/series/observations?series_id=GDP&api_key={fred_key}&file_type=json&limit=1&sort_order=desc'
-        gdp = float(requests.get(url_gdp, timeout=10).json()['observations'][0]['value'])
-        ratio = (wilshire / gdp) * 100
+        # DDDM = Wilshire 5000 Full Cap Price Index em biliões USD
+        url_w = f'https://api.stlouisfed.org/fred/series/observations?series_id=DDDM01USA156NWDB&api_key={fred_key}&file_type=json&limit=5&sort_order=desc'
+        r_w = requests.get(url_w, timeout=10)
+        obs_w = [o for o in r_w.json()['observations'] if o['value'] != '.']
+        market_cap = float(obs_w[0]['value'])  # em biliões USD
+
+        # GDP nominal em biliões USD
+        url_gdp = f'https://api.stlouisfed.org/fred/series/observations?series_id=GDP&api_key={fred_key}&file_type=json&limit=5&sort_order=desc'
+        r_g = requests.get(url_gdp, timeout=10)
+        obs_g = [o for o in r_g.json()['observations'] if o['value'] != '.']
+        gdp = float(obs_g[0]['value'])
+
+        ratio = (market_cap / gdp) * 100
         result = {
             'value': round(ratio, 0),
             'signal': 'SELL' if ratio > 140 else 'CAUTION' if ratio > 120 else
@@ -173,8 +182,10 @@ def get_high_yield_spread():
     cached = get_cached('hy_spread')
     if cached: return cached
     try:
-        url = f'https://api.stlouisfed.org/fred/series/observations?series_id=BAMLH0A0HYM2&api_key={API_KEYS["fred"]}&file_type=json&limit=1&sort_order=desc'
-        spread = float(requests.get(url, timeout=10).json()['observations'][0]['value'])
+        url = f'https://api.stlouisfed.org/fred/series/observations?series_id=BAMLH0A0HYM2&api_key={API_KEYS["fred"]}&file_type=json&limit=5&sort_order=desc'
+        r = requests.get(url, timeout=10)
+        obs = [o for o in r.json()['observations'] if o['value'] != '.']
+        spread = float(obs[0]['value'])
         result = {
             'value': round(spread, 2),
             'signal': 'STRONG_BUY' if spread > 8 else 'BUY' if spread > 5 else
@@ -187,10 +198,6 @@ def get_high_yield_spread():
         print(f"Erro HY Spread: {e}")
         return {'value': 4, 'signal': 'NEUTRAL', 'description': 'Dados indisponíveis'}
 
-
-# ============================================================================
-# SCORE FINAL
-# ============================================================================
 
 def calculate_score(fg, vix, breadth, buffett, cape, hy):
     scores = {
@@ -211,10 +218,6 @@ def calculate_score(fg, vix, breadth, buffett, cape, hy):
     )
 
 
-# ============================================================================
-# ENDPOINTS
-# ============================================================================
-
 @app.route('/')
 def index():
     return send_file('contrarian_web_app.html')
@@ -223,19 +226,16 @@ def index():
 @app.route('/api/data')
 def get_market_data():
     print(f"\n[{datetime.now().strftime('%H:%M:%S')}] /api/data")
-
     fg   = get_fear_greed_index()
     vix  = get_vix()
     sp   = get_sp500_vs_ma200()
     buff = get_buffett_indicator()
     cape = get_shiller_pe()
     hy   = get_high_yield_spread()
-
     score = calculate_score(
         fg['value'], vix['value'], sp['value'],
         buff['value'], cape['value'], hy['value']
     )
-
     return jsonify({
         'score':    score,
         'fearGreed': fg['value'],
@@ -272,7 +272,6 @@ def health():
 
 @app.route('/ping')
 def ping():
-    """UptimeRobot faz ping aqui a cada 5 min para o serviço não adormecer"""
     return 'pong', 200
 
 
