@@ -5,884 +5,931 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#1a1a2e">
-    <title>Indicador NB - Nuno Barbosa</title>
-    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiSW5kaWNhZG9yIE5CIiwic2hvcnRfbmFtZSI6Ik5CIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzFhMWEyZSIsInRoZW1lX2NvbG9yIjoiIzFhMWEyZSJ9">
+    <meta name="theme-color" content="#0d0f14">
+    <title>Indicador NB</title>
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiSW5kaWNhZG9yIE5CIiwic2hvcnRfbmFtZSI6Ik5CIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBkMGYxNCIsInRoZW1lX2NvbG9yIjoiIzBkMGYxNCJ9">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
+        :root {
+            --bg:         #0d0f14;
+            --surface:    #141720;
+            --border:     #1e2332;
+            --border2:    #252a3a;
+            --text:       #dde1ec;
+            --muted:      #5c6480;
+            --accent:     #f0b429;
+            --accent-dim: #f0b42922;
+            --green:      #00c896;
+            --green-dim:  #00c89618;
+            --red:        #ff4757;
+            --red-dim:    #ff475718;
+            --orange:     #ff7043;
+            --orange-dim: #ff704318;
+            --yellow:     #f0b429;
+            --yellow-dim: #f0b42920;
         }
+
+        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            font-family: 'DM Sans', system-ui, sans-serif;
+            background: var(--bg);
             min-height: 100vh;
-            color: #fff;
+            color: var(--text);
             overflow-x: hidden;
-            padding-bottom: 80px;
+            padding-bottom: 72px;
         }
 
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 15px;
-        }
-
+        /* HEADER */
         .header {
-            text-align: center;
-            padding: 20px 0;
-            position: sticky;
-            top: 0;
-            background: rgba(26, 26, 46, 0.95);
-            backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 18px;
+            position: sticky; top: 0;
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
             z-index: 100;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
-
-        .header h1 {
-            font-size: 1.5em;
-            margin-bottom: 5px;
+        .header-left { display:flex; align-items:center; gap:10px; }
+        .header-logo {
+            width:32px; height:32px; border-radius:8px;
+            background: var(--accent);
+            display:flex; align-items:center; justify-content:center;
         }
+        .header-logo svg { width:17px; height:17px; color:#0d0f14; }
+        .header-title { font-size:0.95em; font-weight:700; letter-spacing:-0.01em; }
+        .header-sub   { font-size:0.7em; color:var(--muted); margin-top:1px; }
+        .header-time  { font-family:'DM Mono',monospace; font-size:0.72em; color:var(--muted); }
 
-        .header .subtitle {
-            font-size: 0.85em;
-            opacity: 0.7;
-        }
+        /* CONTAINER */
+        .container { max-width:600px; margin:0 auto; padding:14px 16px; }
 
+        /* SCORE CARD */
         .score-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 20px;
-            padding: 30px 20px;
-            margin: 20px 0;
-            text-align: center;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .score-card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-            animation: pulse 3s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 0.5; }
-            50% { transform: scale(1.1); opacity: 0.8; }
-        }
-
-        .score-number {
-            font-size: 4em;
-            font-weight: 700;
-            margin: 10px 0;
-            position: relative;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
-        }
-
-        .score-label {
-            font-size: 1.2em;
-            font-weight: 600;
-            margin-bottom: 10px;
-            opacity: 0.9;
-        }
-
-        .score-message {
-            font-size: 1.1em;
-            font-weight: 600;
-            margin-top: 15px;
-            padding: 10px;
-            background: rgba(0,0,0,0.2);
-            border-radius: 10px;
-        }
-
-        .gauge-container {
-            margin: 25px 0;
-            padding: 20px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 15px;
-        }
-
-        .gauge {
-            position: relative;
-            width: 100%;
-            height: 30px;
-            background: linear-gradient(to right, 
-                #22c55e 0%, 
-                #84cc16 25%,
-                #fbbf24 50%, 
-                #fb923c 75%,
-                #ef4444 100%);
-            border-radius: 15px;
-            overflow: visible;
-        }
-
-        .gauge-pointer {
-            position: absolute;
-            width: 3px;
-            height: 40px;
-            background: #fff;
-            top: -5px;
-            box-shadow: 0 0 10px rgba(255,255,255,0.5);
-            transition: left 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .gauge-pointer::before {
-            content: '▼';
-            position: absolute;
-            top: -18px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 16px;
-            text-shadow: 0 2px 5px rgba(0,0,0,0.5);
-        }
-
-        .gauge-labels {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 10px;
-            font-size: 0.75em;
-            opacity: 0.8;
-        }
-
-        .advice-section {
-            background: rgba(74, 222, 128, 0.1);
-            border-left: 4px solid #4ade80;
-            border-radius: 10px;
-            padding: 20px;
-            margin: 20px 0;
-        }
-
-        .advice-section.warning {
-            background: rgba(239, 68, 68, 0.1);
-            border-left-color: #ef4444;
-        }
-
-        .advice-section h3 {
-            font-size: 1.1em;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .advice-list {
-            list-style: none;
-        }
-
-        .advice-list li {
-            padding: 8px 0;
-            padding-left: 20px;
-            position: relative;
-            line-height: 1.5;
-        }
-
-        .advice-list li::before {
-            content: '→';
-            position: absolute;
-            left: 0;
-            font-weight: bold;
-        }
-
-        .indicators-section {
-            margin: 30px 0;
-        }
-
-        .section-title {
-            font-size: 1.3em;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid rgba(255,255,255,0.1);
-        }
-
-        .indicator-card {
-            background: rgba(255,255,255,0.05);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 15px;
-            border: 1px solid rgba(255,255,255,0.1);
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .indicator-card:active {
-            transform: scale(0.98);
-        }
-
-        .indicator-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 24px 20px 20px;
             margin-bottom: 12px;
+            position: relative; overflow: hidden;
+        }
+        .score-card::before {
+            content:''; position:absolute; top:0; left:0; right:0; height:2px;
+            background: var(--accent);
+        }
+        .score-top { display:flex; align-items:flex-start; justify-content:space-between; }
+        .score-label {
+            font-size:0.68em; font-weight:600; color:var(--muted);
+            letter-spacing:0.09em; text-transform:uppercase; margin-bottom:6px;
+        }
+        .score-number {
+            font-family:'DM Mono',monospace;
+            font-size:4.2em; font-weight:500; line-height:1;
+            letter-spacing:-0.03em;
+        }
+        .score-number .denom { font-size:0.3em; color:var(--muted); margin-left:3px; }
+        .score-badge {
+            padding:6px 12px; border-radius:6px;
+            font-size:0.7em; font-weight:700;
+            letter-spacing:0.05em; text-transform:uppercase;
+            white-space:nowrap;
+        }
+        .badge-buy     { background:var(--green-dim); color:var(--green); border:1px solid #00c89630; }
+        .badge-neutral { background:var(--yellow-dim); color:var(--yellow); border:1px solid #f0b42930; }
+        .badge-caution { background:var(--orange-dim); color:var(--orange); border:1px solid #ff704330; }
+        .badge-sell    { background:var(--red-dim); color:var(--red); border:1px solid #ff475730; }
+
+        .score-message { margin-top:12px; font-size:0.88em; font-weight:500; color:var(--muted); }
+
+        /* GAUGE */
+        .gauge-wrap { margin-top:18px; padding-top:14px; border-top:1px solid var(--border); }
+        .gauge {
+            position:relative; width:100%; height:5px;
+            background:var(--border2); border-radius:3px; overflow:visible;
+        }
+        .gauge-fill {
+            position:absolute; left:0; top:0; bottom:0; border-radius:3px;
+            transition: width 0.9s cubic-bezier(0.4,0,0.2,1), background 0.9s;
+        }
+        .gauge-dot {
+            position:absolute; width:13px; height:13px;
+            background:var(--text); border-radius:50%; top:-4px; margin-left:-6px;
+            box-shadow: 0 0 0 3px var(--bg);
+            transition: left 0.9s cubic-bezier(0.4,0,0.2,1);
+        }
+        .gauge-labels {
+            display:flex; justify-content:space-between;
+            margin-top:9px; font-size:0.67em; font-weight:600;
+            letter-spacing:0.06em; text-transform:uppercase;
+        }
+        .gauge-labels .gl { color:var(--green); }
+        .gauge-labels .gm { color:var(--muted); }
+        .gauge-labels .gr { color:var(--red); }
+
+        /* ADVICE */
+        .advice-card {
+            border-radius:10px; padding:14px 16px;
+            margin:10px 0; border-left:3px solid;
+        }
+        .advice-card.buy     { background:var(--green-dim); border-color:var(--green); }
+        .advice-card.sell    { background:var(--red-dim);   border-color:var(--red); }
+        .advice-card.neutral { background:var(--yellow-dim);border-color:var(--yellow); }
+        .advice-title {
+            font-size:0.67em; font-weight:700; letter-spacing:0.08em;
+            text-transform:uppercase; color:var(--muted); margin-bottom:9px;
+        }
+        .advice-list { list-style:none; }
+        .advice-list li {
+            padding:4px 0 4px 14px; position:relative;
+            font-size:0.85em; line-height:1.5;
+        }
+        .advice-list li::before {
+            content:''; position:absolute; left:0; top:50%;
+            width:5px; height:1px; background:currentColor; opacity:0.4;
         }
 
-        .indicator-name {
-            font-weight: 600;
-            font-size: 1em;
+        /* HUNTER */
+        .hunter-card {
+            background:var(--surface); border:1px solid var(--border);
+            border-radius:12px; padding:14px 16px; margin:10px 0;
         }
-
-        .indicator-signal {
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.75em;
-            font-weight: 600;
+        .hunter-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+        .hunter-title-row { display:flex; align-items:center; gap:7px; }
+        .hunter-label { font-size:0.82em; font-weight:700; }
+        .hunter-badge {
+            font-family:'DM Mono',monospace; font-size:0.68em; font-weight:500;
+            padding:3px 9px; border-radius:4px; letter-spacing:0.03em;
         }
+        .hunter-bar-wrap { width:100%; height:3px; background:var(--border2); border-radius:2px; margin-bottom:10px; }
+        .hunter-bar { height:3px; border-radius:2px; transition:width 0.9s cubic-bezier(0.4,0,0.2,1); }
+        .hunter-text  { font-size:0.82em; color:var(--muted); line-height:1.55; }
+        .hunter-quote { margin-top:8px; font-size:0.73em; color:var(--muted); font-style:italic; opacity:0.6; }
 
-        .signal-STRONG_BUY {
-            background: #22c55e;
-            color: #fff;
-        }
-
-        .signal-BUY {
-            background: #84cc16;
-            color: #fff;
-        }
-
-        .signal-NEUTRAL {
-            background: #fbbf24;
-            color: #000;
-        }
-
-        .signal-CAUTION {
-            background: #fb923c;
-            color: #fff;
-        }
-
-        .signal-SELL {
-            background: #ef4444;
-            color: #fff;
-        }
-
-        .indicator-value {
-            font-size: 1.8em;
-            font-weight: 700;
-            color: #667eea;
-            margin: 8px 0;
-        }
-
-        .indicator-description {
-            font-size: 0.9em;
-            opacity: 0.8;
-            line-height: 1.4;
-        }
-
+        /* QUOTE */
         .quote-card {
-            background: rgba(102, 126, 234, 0.1);
-            border-left: 4px solid #667eea;
-            border-radius: 10px;
-            padding: 20px;
-            margin: 25px 0;
-            font-style: italic;
-            line-height: 1.6;
+            border-left:2px solid var(--border2); padding:12px 14px; margin:14px 0;
+            font-size:0.8em; font-style:italic; color:var(--muted); line-height:1.65;
         }
 
-        .actions {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(26, 26, 46, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 10px;
-            border-top: 1px solid rgba(255,255,255,0.1);
-            display: flex;
-            gap: 6px;
-            z-index: 100;
-            flex-wrap: nowrap;
+        /* SECTION TITLE */
+        .section-title {
+            font-size:0.67em; font-weight:700; letter-spacing:0.09em;
+            text-transform:uppercase; color:var(--muted);
+            margin:20px 0 10px; display:flex; align-items:center; gap:10px;
+        }
+        .section-title::after { content:''; flex:1; height:1px; background:var(--border); }
+
+        /* INDICATOR CARDS */
+        .indicator-card {
+            background:var(--surface); border:1px solid var(--border);
+            border-radius:12px; padding:14px 16px; margin-bottom:8px;
+        }
+        .indicator-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+        .indicator-name-row { display:flex; align-items:center; gap:9px; }
+        .indicator-icon {
+            width:28px; height:28px; border-radius:6px; background:var(--border2);
+            display:flex; align-items:center; justify-content:center; flex-shrink:0;
+        }
+        .indicator-icon svg { width:13px; height:13px; color:var(--muted); }
+        .indicator-name { font-size:0.85em; font-weight:600; }
+        .indicator-signal {
+            padding:4px 9px; border-radius:4px;
+            font-size:0.66em; font-weight:700;
+            letter-spacing:0.05em; text-transform:uppercase; white-space:nowrap;
+        }
+        .signal-STRONG_BUY { background:var(--green-dim); color:var(--green); }
+        .signal-BUY        { background:#00c89612; color:#00b882; }
+        .signal-NEUTRAL    { background:var(--yellow-dim); color:var(--yellow); }
+        .signal-CAUTION    { background:var(--orange-dim); color:var(--orange); }
+        .signal-SELL       { background:var(--red-dim); color:var(--red); }
+        .indicator-row2 { display:flex; justify-content:space-between; align-items:baseline; gap:12px; }
+        .indicator-value {
+            font-family:'DM Mono',monospace; font-size:1.75em; font-weight:500;
+            letter-spacing:-0.02em; flex-shrink:0;
+        }
+        .indicator-desc { font-size:0.77em; color:var(--muted); line-height:1.4; text-align:right; }
+
+        /* LAST UPDATE */
+        .last-update {
+            text-align:center; font-family:'DM Mono',monospace;
+            font-size:0.7em; color:var(--muted); margin:20px 0 8px;
         }
 
-        .btn {
-            flex: 1;
-            padding: 12px 4px;
-            border: none;
-            border-radius: 10px;
-            font-size: 0.78em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            text-align: center;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .btn-primary:active {
-            transform: scale(0.95);
-        }
-
-        .btn-secondary {
-            background: rgba(255,255,255,0.1);
-            color: white;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-
-        .loading {
-            text-align: center;
-            padding: 60px 20px;
-        }
-
+        /* LOADING */
+        .loading { text-align:center; padding:80px 20px; }
         .spinner {
-            width: 50px;
-            height: 50px;
-            margin: 0 auto 20px;
-            border: 4px solid rgba(255,255,255,0.1);
-            border-top-color: #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
+            width:32px; height:32px; margin:0 auto 14px;
+            border:2px solid var(--border2); border-top-color:var(--accent);
+            border-radius:50%; animation:spin 0.7s linear infinite;
         }
+        .loading p { font-size:0.8em; color:var(--muted); }
+        @keyframes spin { to { transform:rotate(360deg); } }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        /* ACTIONS */
+        .actions {
+            position:fixed; bottom:0; left:0; right:0;
+            background:var(--bg); border-top:1px solid var(--border);
+            padding:9px 14px; display:flex; gap:7px; z-index:100;
         }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.8);
-            z-index: 200;
-            padding: 20px;
-            overflow-y: auto;
+        .btn {
+            flex:1; padding:10px 5px; border:none; border-radius:8px;
+            font-family:'DM Sans',sans-serif; font-size:0.72em; font-weight:600;
+            cursor:pointer; display:flex; align-items:center; justify-content:center; gap:5px;
+            transition:opacity 0.15s;
         }
+        .btn svg { width:13px; height:13px; flex-shrink:0; }
+        .btn:active { opacity:0.7; }
+        .btn-primary   { background:var(--accent); color:#0d0f14; }
+        .btn-secondary { background:var(--surface); color:var(--text); border:1px solid var(--border2); }
 
-        .modal-content {
-            background: #1a1a2e;
-            border-radius: 20px;
-            padding: 25px;
-            max-width: 500px;
-            margin: 50px auto;
-            position: relative;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .close-btn {
-            font-size: 1.5em;
-            cursor: pointer;
-            padding: 5px 10px;
-        }
-
-        .history-item {
-            background: rgba(255,255,255,0.05);
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 10px;
-        }
-
-        .history-date {
-            font-size: 0.85em;
-            opacity: 0.7;
-            margin-bottom: 5px;
-        }
-
-        .history-score {
-            font-size: 1.5em;
-            font-weight: 700;
-            color: #667eea;
-        }
-
-        @media (max-width: 480px) {
-            .score-number {
-                font-size: 3em;
-            }
-            
-            .container {
-                padding: 10px;
-            }
-            
-            .actions {
-                gap: 6px;
-            }
-
-            .btn {
-                font-size: 0.85em;
-                padding: 12px 8px;
-            }
-        }
-
+        /* INSTALL */
         .install-prompt {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 15px;
-            margin: 15px 0;
-            border-radius: 12px;
-            display: none;
-            align-items: center;
-            justify-content: space-between;
+            background:var(--surface); border:1px solid #f0b42940;
+            padding:11px 14px; margin:10px 0; border-radius:10px;
+            display:none; align-items:center; justify-content:space-between; font-size:0.82em;
+        }
+        .install-prompt button {
+            background:var(--accent); color:#0d0f14;
+            border:none; padding:7px 14px; border-radius:6px; font-weight:700; cursor:pointer;
         }
 
-        .install-prompt button {
-            background: white;
-            color: #667eea;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
+        /* MODALS */
+        .modal {
+            display:none; position:fixed; top:0; left:0; right:0; bottom:0;
+            background:rgba(0,0,0,0.78); z-index:200; padding:16px; overflow-y:auto;
         }
+        .modal-content {
+            background:var(--surface); border:1px solid var(--border2);
+            border-radius:16px; padding:22px; max-width:500px;
+            margin:30px auto; position:relative;
+        }
+        .modal-header {
+            display:flex; justify-content:space-between; align-items:center;
+            margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid var(--border);
+        }
+        .modal-header h2 { font-size:0.95em; font-weight:700; }
+        .close-btn {
+            width:26px; height:26px; background:var(--border2); border-radius:50%;
+            display:flex; align-items:center; justify-content:center;
+            cursor:pointer; font-size:0.8em; color:var(--muted);
+        }
+        .msec {
+            background:var(--bg); border-radius:10px; padding:14px; margin-bottom:10px;
+        }
+        .msec-title { font-size:0.82em; font-weight:700; margin-bottom:4px; display:flex; align-items:center; gap:7px; }
+        .msec-title svg { width:13px; height:13px; color:var(--muted); }
+        .msec-sub { font-size:0.72em; color:var(--accent); margin-bottom:7px; }
+        .msec p { font-size:0.8em; color:var(--muted); line-height:1.6; }
+        .msec p + p { margin-top:5px; }
+
+        .history-item { background:var(--bg); border-radius:8px; padding:11px; margin-bottom:7px; }
+        .history-date  { font-size:0.72em; color:var(--muted); font-family:'DM Mono',monospace; margin-bottom:3px; }
+        .history-score { font-family:'DM Mono',monospace; font-size:1.25em; font-weight:500; }
+
+        .weight-table { width:100%; border-collapse:collapse; font-size:0.8em; margin-top:8px; }
+        .weight-table td { padding:6px 0; border-bottom:1px solid var(--border); color:var(--muted); }
+        .weight-table td:last-child { text-align:right; font-family:'DM Mono',monospace; color:var(--text); }
+        .weight-table tr:last-child td { border-bottom:none; }
+
+        @media (max-width:380px) {
+            .score-number { font-size:3.6em; }
+            .btn { font-size:0.67em; }
+        }
+
+        /* ALERTS */
+        .alert-dot { position:absolute; top:-3px; right:-3px; width:8px; height:8px; border-radius:50%; background:var(--green); border:2px solid var(--bg); }
+        .btn-alerts { position:relative; }
+        .toggle-row { display:flex; align-items:center; justify-content:space-between; padding:14px; background:var(--bg); border-radius:10px; margin-bottom:10px; }
+        .toggle-label { font-size:0.85em; font-weight:600; }
+        .toggle-sub { font-size:0.73em; color:var(--muted); margin-top:2px; }
+        .toggle { position:relative; width:42px; height:24px; cursor:pointer; flex-shrink:0; }
+        .toggle input { opacity:0; width:0; height:0; position:absolute; }
+        .toggle-track { position:absolute; inset:0; background:var(--border2); border-radius:12px; transition:background 0.2s; }
+        .toggle input:checked + .toggle-track { background:var(--green); }
+        .toggle-thumb { position:absolute; width:18px; height:18px; background:#fff; border-radius:50%; top:3px; left:3px; transition:left 0.2s; pointer-events:none; }
+        .toggle input:checked ~ .toggle-thumb { left:21px; }
+        .threshold-row { margin-bottom:16px; }
+        .threshold-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+        .threshold-name { font-size:0.82em; font-weight:600; }
+        .threshold-value { font-family:'DM Mono',monospace; font-size:0.82em; background:var(--border2); padding:3px 10px; border-radius:5px; min-width:52px; text-align:center; }
+        input[type=range] { width:100%; height:4px; border-radius:2px; cursor:pointer; -webkit-appearance:none; appearance:none; background:linear-gradient(to right, var(--accent) 0%, var(--accent) var(--pct,50%), var(--border2) var(--pct,50%)); outline:none; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; height:16px; border-radius:50%; background:var(--text); cursor:pointer; box-shadow:0 0 0 3px var(--surface); }
+        input[type=email] { width:100%; padding:10px 12px; border-radius:8px; background:var(--border); border:1px solid var(--border2); color:var(--text); font-family:'DM Sans',sans-serif; font-size:0.85em; outline:none; transition:border-color 0.2s; }
+        input[type=email]:focus { border-color:var(--accent); }
+        .field-label { font-size:0.73em; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
+        .field-wrap { margin-bottom:14px; }
+        .alert-status { font-size:0.75em; color:var(--muted); font-family:'DM Mono',monospace; margin-top:6px; min-height:16px; }
+        .status-ok { color:var(--green); }
+        .status-err { color:var(--red); }
+        .btn-full { width:100%; padding:12px; border:none; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:0.85em; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; transition:opacity 0.15s; }
+        .btn-full:active { opacity:0.75; }
+        .btn-save { background:var(--accent); color:#0d0f14; margin-bottom:8px; }
+        .btn-test { background:var(--surface); color:var(--text); border:1px solid var(--border2); }
+        .btn-full svg { width:14px; height:14px; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>📊 Indicador NB</h1>
-        <p class="subtitle">Análise Contrarian de Mercado - Nuno Barbosa</p>
+
+<div class="header">
+    <div class="header-left">
+        <div class="header-logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+        </div>
+        <div>
+            <div class="header-title">Indicador NB</div>
+            <div class="header-sub">Análise Contrarian · N. Barbosa</div>
+        </div>
+    </div>
+    <div class="header-time" id="headerTime">--:--</div>
+</div>
+
+<div class="container">
+    <div class="install-prompt" id="installPrompt">
+        <span>Adicionar ao ecrã inicial</span>
+        <button onclick="installApp()">Instalar</button>
     </div>
 
-    <div class="container">
-        <div class="install-prompt" id="installPrompt">
-            <span>📱 Adicionar ao ecrã inicial?</span>
-            <button onclick="installApp()">Instalar</button>
-        </div>
+    <div id="loading" class="loading">
+        <div class="spinner"></div>
+        <p>A consultar mercados...</p>
+    </div>
 
-        <div id="loading" class="loading">
-            <div class="spinner"></div>
-            <p>A analisar mercado...</p>
-        </div>
+    <div id="content" style="display:none;">
 
-        <div id="content" style="display: none;">
-            <div class="score-card">
-                <div class="score-label">Market Score</div>
-                <div class="score-number" id="scoreNumber">--</div>
-                <div class="score-message" id="scoreMessage">--</div>
+        <div class="score-card">
+            <div class="score-top">
+                <div>
+                    <div class="score-label">Market Score</div>
+                    <div class="score-number" id="scoreNumber">--<span class="denom">/100</span></div>
+                </div>
+                <div class="score-badge" id="scoreBadge">--</div>
             </div>
-
-            <div class="gauge-container">
+            <div class="score-message" id="scoreMessage">--</div>
+            <div class="gauge-wrap">
                 <div class="gauge">
-                    <div class="gauge-pointer" id="gaugePointer"></div>
+                    <div class="gauge-fill" id="gaugeFill"></div>
+                    <div class="gauge-dot"  id="gaugeDot"></div>
                 </div>
                 <div class="gauge-labels">
-                    <span>🟢 FUNDO</span>
-                    <span>🟡 NEUTRO</span>
-                    <span>🔴 TOPO</span>
+                    <span class="gl">Fundo</span>
+                    <span class="gm">Neutro</span>
+                    <span class="gr">Topo</span>
                 </div>
-            </div>
-
-            <div id="adviceSection"></div>
-            <div class="quote-card" id="quote"></div>
-
-            <div class="indicators-section">
-                <h2 class="section-title">📊 Indicadores</h2>
-                <div id="indicatorsGrid"></div>
-            </div>
-
-            <div style="text-align: center; opacity: 0.5; margin: 30px 0; font-size: 0.85em;" id="lastUpdate"></div>
-        </div>
-    </div>
-
-    <div class="actions">
-        <button class="btn btn-primary" onclick="fetchData()">🔄 Actualizar</button>
-        <button class="btn btn-secondary" onclick="showHistory()">📋 O Meu Histórico</button>
-        <button class="btn btn-secondary" onclick="showAbout()">💡 Sobre</button>
-        <button class="btn btn-secondary" onclick="showIndicators()">📊 Indicadores</button>
-    </div>
-
-    <!-- Modal Sobre -->
-    <div class="modal" id="aboutModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>💡 Sobre o Indicador NB</h2>
-                <span class="close-btn" onclick="closeAbout()">✕</span>
-            </div>
-            <div style="line-height: 1.8; font-size: 0.97em;">
-
-                <div style="background:rgba(102,126,234,0.15); border-left:4px solid #667eea; border-radius:8px; padding:18px; margin-bottom:20px;">
-                    Imagina que queres comprar uma casa. Faz mais sentido comprar quando os preços estão em baixo e toda a gente tem medo de comprar, ou quando os preços estão nas alturas e toda a gente quer comprar?
-                    <br><br>
-                    No mercado financeiro é exactamente a mesma coisa.
-                </div>
-
-                <p style="margin-bottom:15px;">O Indicador NB analisa 6 sinais diferentes do mercado americano e diz-te numa escala de 0 a 100 se o mercado está em pânico ou em euforia.</p>
-
-                <div style="background:rgba(34,197,94,0.1); border-left:4px solid #22c55e; border-radius:8px; padding:15px; margin-bottom:12px;">
-                    <strong>🟢 Score perto de 0</strong><br>
-                    As pessoas estão com medo, a vender tudo, os preços estão em baixo. Historicamente é quando os melhores investimentos são feitos.
-                </div>
-
-                <div style="background:rgba(239,68,68,0.1); border-left:4px solid #ef4444; border-radius:8px; padding:15px; margin-bottom:20px;">
-                    <strong>🔴 Score perto de 100</strong><br>
-                    Toda a gente está eufórica, a comprar tudo, os preços estão inflacionados. Historicamente é quando se deve ter cautela.
-                </div>
-
-                <div style="background:rgba(251,191,36,0.1); border-left:4px solid #fbbf24; border-radius:8px; padding:15px; margin-bottom:20px;">
-                    <strong>⏳ Isto não é para traders</strong><br><br>
-                    Não olhas para isto hoje e vendes amanhã. É um indicador de longo prazo — <strong>1 a 3 anos</strong>. A ideia é simples: acumulas posições quando há pânico, proteges o que tens quando há euforia.
-                </div>
-
-                <div style="background:rgba(102,126,234,0.1); border-left:4px solid #667eea; border-radius:8px; padding:15px; margin-bottom:20px; font-style:italic;">
-                    "Sê cauteloso quando outros são gananciosos, e ganancioso quando outros têm medo."
-                    <br><span style="opacity:0.7; font-size:0.9em;">— Warren Buffett, o maior investidor de sempre</span>
-                </div>
-
-                <p style="opacity:0.7; font-size:0.88em;">O Indicador NB tenta medir exactamente isso, combinando 6 indicadores diferentes do mercado americano num único score.</p>
-
-                <div style="margin-top:20px; padding-top:15px; border-top:1px solid rgba(255,255,255,0.1); font-size:0.82em; opacity:0.6; text-align:center;">
-                    ⚠️ Ferramenta de análise pessoal. Não é aconselhamento financeiro.
-                </div>
-
             </div>
         </div>
+
+        <div id="adviceSection"></div>
+        <div class="hunter-card" id="hunterCard"></div>
+        <div class="quote-card" id="quote"></div>
+
+        <div class="section-title">Indicadores</div>
+        <div id="indicatorsGrid"></div>
+
+        <div class="last-update" id="lastUpdate"></div>
     </div>
+</div>
 
-    <!-- Modal Indicadores -->
-    <div class="modal" id="indicatorsModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>📊 Os Indicadores</h2>
-                <span class="close-btn" onclick="closeIndicators()">✕</span>
+<div class="actions">
+    <button class="btn btn-primary" onclick="fetchData()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+        Actualizar
+    </button>
+    <button class="btn btn-secondary" onclick="showHistory()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Histórico
+    </button>
+    <button class="btn btn-secondary" onclick="showAbout()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Sobre
+    </button>
+    <button class="btn btn-secondary" onclick="showIndicators()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Pesos
+    </button>
+    <button class="btn btn-secondary btn-alerts" onclick="showAlerts()" id="btnAlerts">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        Alertas
+    </button>
+</div>
+
+<!-- Modal Sobre -->
+<div class="modal" id="aboutModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Sobre o Indicador NB</h2>
+            <div class="close-btn" onclick="closeAbout()">✕</div>
+        </div>
+        <div class="msec" style="border-left:3px solid var(--accent);">
+            <p>Imagina que queres comprar uma casa. Faz mais sentido comprar quando os preços estão em baixo e toda a gente tem medo, ou quando estão nas alturas e toda a gente quer comprar? No mercado financeiro é exactamente a mesma coisa.</p>
+        </div>
+        <div class="msec">
+            <p>O Indicador NB analisa 6 sinais do mercado americano numa escala de 0 a 100. Score perto de 0 significa pânico extremo — historicamente o melhor momento de compra. Score perto de 100 significa euforia — altura de ter cautela.</p>
+        </div>
+        <div class="msec" style="border-left:3px solid var(--border2);">
+            <p><strong>Não é para traders.</strong> É um instrumento de posicionamento de longo prazo — 1 a 3 anos. Acumulas posições quando há pânico, proteges o que tens quando há euforia.</p>
+        </div>
+        <div class="msec">
+            <p style="font-style:italic;">"Be fearful when others are greedy, and greedy when others are fearful." — Warren Buffett</p>
+        </div>
+        <p style="font-size:0.73em; color:var(--muted); text-align:center; margin-top:14px;">Ferramenta de análise pessoal. Não é aconselhamento financeiro.</p>
+    </div>
+</div>
+
+<!-- Modal Indicadores -->
+<div class="modal" id="indicatorsModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Indicadores e Pesos</h2>
+            <div class="close-btn" onclick="closeIndicators()">✕</div>
+        </div>
+        <div class="msec">
+            <div class="msec-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                Fear &amp; Greed Index
             </div>
-            <div style="line-height: 1.7; font-size: 0.95em;">
-
-                <div style="background:rgba(102,126,234,0.15); border-left:4px solid #667eea; border-radius:8px; padding:15px; margin-bottom:20px; font-size:0.9em;">
-                    São 6 indicadores de naturezas diferentes — sentimento, volatilidade, avaliação histórica e crédito. Quando todos apontam na mesma direcção, o sinal é forte.
-                </div>
-
-                <div style="background:rgba(255,255,255,0.05); border-radius:12px; padding:18px; margin-bottom:15px;">
-                    <div style="font-size:1.1em; font-weight:700; margin-bottom:8px;">😱 Fear & Greed Index</div>
-                    <div style="color:#667eea; font-size:0.85em; margin-bottom:10px;">Peso: 30% · Fonte: CNN / Alternative.me</div>
-                    <p>Criado pela CNN, mede o sentimento do mercado de 0 (medo extremo) a 100 (ganância extrema). Agrega 7 sub-indicadores: momentum, força das acções, volatilidade, opções, entre outros.</p>
-                    <p style="margin-top:8px; opacity:0.8;">Em Março 2020 chegou a 12. Quem comprou nessa altura ganhou mais de 80% em 12 meses.</p>
-                </div>
-
-                <div style="background:rgba(255,255,255,0.05); border-radius:12px; padding:18px; margin-bottom:15px;">
-                    <div style="font-size:1.1em; font-weight:700; margin-bottom:8px;">⚡ VIX — Índice de Volatilidade</div>
-                    <div style="color:#667eea; font-size:0.85em; margin-bottom:10px;">Peso: 20% · Fonte: CBOE / FRED</div>
-                    <p>O "índice do medo" da bolsa de Chicago. Mede a volatilidade esperada para os próximos 30 dias. VIX acima de 35 significa pânico. VIX abaixo de 12 significa perigosa complacência.</p>
-                    <p style="margin-top:8px; opacity:0.8;">Em Março 2020 chegou a 82. Em 2017 andou abaixo de 10, antes de uma correcção violenta.</p>
-                </div>
-
-                <div style="background:rgba(255,255,255,0.05); border-radius:12px; padding:18px; margin-bottom:15px;">
-                    <div style="font-size:1.1em; font-weight:700; margin-bottom:8px;">🏦 Buffett Indicator</div>
-                    <div style="color:#667eea; font-size:0.85em; margin-bottom:10px;">Peso: 15% · Fonte: FRED</div>
-                    <p>O próprio Buffett disse ser "provavelmente o melhor indicador único de avaliação do mercado". Divide a capitalização total da bolsa americana pelo PIB dos EUA.</p>
-                    <p style="margin-top:8px; opacity:0.8;">Abaixo de 80% está barato. Acima de 140% é território de bolha (2000 e 2021).</p>
-                </div>
-
-                <div style="background:rgba(255,255,255,0.05); border-radius:12px; padding:18px; margin-bottom:15px;">
-                    <div style="font-size:1.1em; font-weight:700; margin-bottom:8px;">📐 Shiller P/E (CAPE)</div>
-                    <div style="color:#667eea; font-size:0.85em; margin-bottom:10px;">Peso: 15% · Fonte: Robert Shiller (Yale)</div>
-                    <p>Criado pelo economista Nobel Robert Shiller. Compara o preço do mercado com os lucros médios dos últimos 10 anos, ajustados à inflação. Elimina o ruído de curto prazo.</p>
-                    <p style="margin-top:8px; opacity:0.8;">Média histórica: 17. Em 1929 estava em 33, em 2000 chegou a 44, em 2009 caiu a 13.</p>
-                </div>
-
-                <div style="background:rgba(255,255,255,0.05); border-radius:12px; padding:18px; margin-bottom:15px;">
-                    <div style="font-size:1.1em; font-weight:700; margin-bottom:8px;">📉 S&P 500 vs Média 200 Dias</div>
-                    <div style="color:#667eea; font-size:0.85em; margin-bottom:10px;">Peso: 10% · Fonte: FRED</div>
-                    <p>A média móvel de 200 dias representa a tendência de longo prazo. Quando o mercado está mais de 15% abaixo desta média, está em sobrevenda extrema — historicamente sinal de oportunidade.</p>
-                </div>
-
-                <div style="background:rgba(255,255,255,0.05); border-radius:12px; padding:18px; margin-bottom:15px;">
-                    <div style="font-size:1.1em; font-weight:700; margin-bottom:8px;">📊 High Yield Spread</div>
-                    <div style="color:#667eea; font-size:0.85em; margin-bottom:10px;">Peso: 10% · Fonte: FRED / ICE BofA</div>
-                    <p>Mede o medo no mercado de crédito. Quando os investidores têm medo, exigem um prémio maior para emprestar a empresas arriscadas. Spread acima de 8% indica stress severo e é historicamente associado a boas entradas.</p>
-                </div>
-
-                <div style="background:rgba(102,126,234,0.1); border-left:4px solid #667eea; border-radius:8px; padding:15px;">
-                    <strong>🧮 Ponderação do Score Final</strong><br><br>
-                    <span style="font-size:0.9em;">
-                    Fear & Greed → 30% &nbsp;|&nbsp; VIX → 20%<br>
-                    Buffett → 15% &nbsp;|&nbsp; Shiller P/E → 15%<br>
-                    S&P vs MA200 → 10% &nbsp;|&nbsp; HY Spread → 10%
-                    </span>
-                    <br><br>
-                    <span style="font-size:0.88em; opacity:0.8;">Score 0-35 = zona de compra &nbsp;·&nbsp; Score 65-100 = zona de cautela</span>
-                </div>
-
+            <div class="msec-sub">Peso: 20% · Fonte: CNN / Alternative.me</div>
+            <p>Mede o sentimento do mercado de 0 a 100, agregando 7 sub-indicadores: momentum, força de acções, volatilidade e opções. Em Março 2020 chegou a 12. Quem comprou nessa altura ganhou +80% em 12 meses.</p>
+        </div>
+        <div class="msec">
+            <div class="msec-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                VIX — Índice de Volatilidade
             </div>
+            <div class="msec-sub">Peso: 15% · Fonte: CBOE / FRED · Range: 10–55</div>
+            <p>O índice do medo da bolsa de Chicago. Acima de 35 significa pânico. Abaixo de 13 significa complacência perigosa — volatilidade comprimida antes de um bust.</p>
+        </div>
+        <div class="msec">
+            <div class="msec-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                Buffett Indicator
+            </div>
+            <div class="msec-sub">Peso: 20% · Fonte: FRED · Range recalibrado: 80–220%</div>
+            <p>Capitalização total da bolsa ÷ PIB dos EUA. Thresholds actualizados para o novo normal pós-2010 — o ratio estrutural subiu com a globalização das receitas e as recompras de acções.</p>
+        </div>
+        <div class="msec">
+            <div class="msec-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                Shiller P/E (CAPE)
+            </div>
+            <div class="msec-sub">Peso: 20% · Fonte: Robert Shiller / Yale · Range: 10–45</div>
+            <p>Preço do mercado vs. lucros médios dos últimos 10 anos ajustados à inflação. Média histórica: 17. Em 1929 estava em 33, em 2000 chegou a 44, em 2009 caiu a 13.</p>
+        </div>
+        <div class="msec">
+            <div class="msec-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                S&amp;P 500 vs Média 200 Dias
+            </div>
+            <div class="msec-sub">Peso: 10% · Fonte: FRED · Score contínuo ±30%</div>
+            <p>Desvio percentual do mercado em relação à tendência de longo prazo. Contínuo, não binário — cobre o range histórico de ±30%.</p>
+        </div>
+        <div class="msec">
+            <div class="msec-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                High Yield Spread
+            </div>
+            <div class="msec-sub">Peso: 15% · Fonte: FRED / ICE BofA · Range: 1.5–12%</div>
+            <p>Prémio de risco exigido para emprestar a empresas de menor qualidade. Spread muito baixo sinaliza complacência de crédito — um dos indicadores-chave do cenário Hunter.</p>
+        </div>
+        <div class="msec" style="border-left:3px solid var(--accent);">
+            <div class="msec-title" style="color:var(--accent);">Ponderação Final</div>
+            <table class="weight-table">
+                <tr><td>Fear &amp; Greed Index</td><td>20%</td></tr>
+                <tr><td>VIX</td><td>15%</td></tr>
+                <tr><td>Buffett Indicator</td><td>20%</td></tr>
+                <tr><td>Shiller P/E (CAPE)</td><td>20%</td></tr>
+                <tr><td>S&amp;P vs MA200</td><td>10%</td></tr>
+                <tr><td>High Yield Spread</td><td>15%</td></tr>
+            </table>
+            <p style="margin-top:9px; font-size:0.76em;">Score 0–35 = zona de compra · Score 65–100 = zona de cautela</p>
+        </div>
+        <div class="msec" style="border-left:3px solid var(--red);">
+            <div class="msec-title" style="color:var(--red);">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                Hunter Bust Risk (indicador separado)
+            </div>
+            <p>Mede a probabilidade de estarmos no final de um melt-up antes de um bust severo. Combina overvaluation extrema (CAPE + Buffett), complacência de crédito (HY Spread baixo) e volatilidade suprimida (VIX baixo).</p>
+            <p style="margin-top:7px; font-style:italic; font-size:0.88em;">"O melt-up vai ser épico. O bust vai ser brutal." — David Hunter</p>
         </div>
     </div>
+</div>
 
-    <div class="modal" id="historyModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>📈 Histórico</h2>
-                <span class="close-btn" onclick="closeHistory()">✕</span>
-            </div>
-            <div id="historyContent"></div>
+<!-- Modal Histórico -->
+<div class="modal" id="historyModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Histórico</h2>
+            <div class="close-btn" onclick="closeHistory()">✕</div>
         </div>
+        <div id="historyContent"></div>
     </div>
+</div>
 
-    <script>
-        const quotes = [
-            '"Be fearful when others are greedy, greedy when others are fearful." - Warren Buffett',
-            '"The time of maximum pessimism is the best time to buy." - John Templeton',
-            '"Buy when there\'s blood in the streets, even if it\'s your own." - Baron Rothschild',
-            '"In the short run, the market is a voting machine. In the long run, it is a weighing machine." - Benjamin Graham',
-            '"The four most dangerous words in investing are: this time it\'s different." - John Templeton'
+<script>
+    function updateClock() {
+        document.getElementById('headerTime').textContent =
+            new Date().toLocaleTimeString('pt-PT', {hour:'2-digit', minute:'2-digit'});
+    }
+    updateClock(); setInterval(updateClock, 30000);
+
+    const quotes = [
+        '"Be fearful when others are greedy, greedy when others are fearful." — Warren Buffett',
+        '"The time of maximum pessimism is the best time to buy." — John Templeton',
+        '"Buy when there\'s blood in the streets, even if it\'s your own." — Baron Rothschild',
+        '"In the short run the market is a voting machine. In the long run it is a weighing machine." — Benjamin Graham',
+        '"The four most dangerous words in investing are: this time it\'s different." — John Templeton'
+    ];
+
+    const ICONS = {
+        fg:      `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`,
+        vix:     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`,
+        buffett: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>`,
+        cape:    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>`,
+        ma200:   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>`,
+        hy:      `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>`
+    };
+
+    const SIGNAL_LABELS = { STRONG_BUY:'Compra Forte', BUY:'Compra', NEUTRAL:'Neutro', CAUTION:'Cautela', SELL:'Venda' };
+
+    async function fetchData() {
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('content').style.display = 'none';
+        try {
+            const r = await fetch('/api/data');
+            displayResults(await r.json());
+        } catch {
+            displayResults({
+                fearGreed: Math.floor(Math.random() * 100),
+                vix:       12 + Math.random() * 30,
+                buffett:   80 + Math.random() * 60,
+                cape:      15 + Math.random() * 20,
+                breadth:   -15 + Math.random() * 30,
+                hySpread:  2 + Math.random() * 8
+            });
+        }
+    }
+
+    const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+
+    function displayResults(d) {
+        // Normalizações corrigidas
+        const s_fg  = d.fearGreed;
+        const s_vix = 100 - clamp(((d.vix - 10)      / 45) * 100, 0, 100);
+        const s_buf = clamp(((d.buffett - 80)         / 140) * 100, 0, 100);
+        const s_cap = clamp(((d.cape - 10)            / 35)  * 100, 0, 100);
+        const s_ma  = clamp(50 + (d.breadth / 30) * 50,            0, 100);
+        const s_hy  = 100 - clamp(((d.hySpread - 1.5) / 10.5) * 100, 0, 100);
+
+        const score = Math.round(s_fg*0.20 + s_vix*0.15 + s_buf*0.20 + s_cap*0.20 + s_ma*0.10 + s_hy*0.15);
+
+        // Hunter Bust Risk
+        const h_val  = clamp((clamp(((d.cape-22)/18)*100,0,100)*0.5)+(clamp(((d.buffett-130)/80)*100,0,100)*0.5),0,100);
+        const h_cred = clamp(100 - ((d.hySpread-1.5)/4)*100, 0, 100);
+        const h_vol  = clamp(100 - ((d.vix-10)/12)*100, 0, 100);
+        const hScore = Math.round(h_val*0.50 + h_cred*0.30 + h_vol*0.20);
+
+        // Score UI
+        let badgeClass, badgeText, advClass, message, advice;
+        if (score <= 20) {
+            badgeClass='badge-buy'; badgeText='Compra Agressiva'; advClass='buy';
+            message='Pessimismo extremo — momento histórico de entrada';
+            advice=['Altura de ser ganancioso quando outros têm medo','Aumenta exposição a acções de qualidade','DCA se ainda incerto'];
+        } else if (score <= 35) {
+            badgeClass='badge-buy'; badgeText='Boa Oportunidade'; advClass='buy';
+            message='Medo acima do normal — momento favorável para acumular';
+            advice=['Acumula posições gradualmente','Procura empresas de qualidade com desconto'];
+        } else if (score <= 65) {
+            badgeClass='badge-neutral'; badgeText='Neutro'; advClass='neutral';
+            message='Sem sinais claros de extremo';
+            advice=['Mantém posições actuais','Prepara lista de compras para a próxima correcção'];
+        } else if (score <= 80) {
+            badgeClass='badge-caution'; badgeText='Cautela'; advClass='sell';
+            message='Euforia acima do normal — reduz exposição progressivamente';
+            advice=['Considera reduzir exposição','Evita FOMO','Aumenta reserva de cash'];
+        } else {
+            badgeClass='badge-sell'; badgeText='Vender / Proteger'; advClass='sell';
+            message='Euforia extrema — protege o capital';
+            advice=['Realiza lucros em posições sobrevalorizadas','Aumenta significativamente cash e bonds'];
+        }
+
+        const gaugeColor = score <= 35 ? 'var(--green)' : score <= 65 ? 'var(--yellow)' : 'var(--red)';
+
+        document.getElementById('scoreNumber').innerHTML = `${score}<span class="denom">/100</span>`;
+        const badge = document.getElementById('scoreBadge');
+        badge.className = `score-badge ${badgeClass}`; badge.textContent = badgeText;
+        document.getElementById('scoreMessage').textContent = message;
+        document.getElementById('gaugeFill').style.cssText = `width:${score}%;background:${gaugeColor};`;
+        document.getElementById('gaugeDot').style.left = `${score}%`;
+
+        document.getElementById('adviceSection').innerHTML = `
+            <div class="advice-card ${advClass}">
+                <div class="advice-title">Recomendações Contrarian</div>
+                <ul class="advice-list">${advice.map(a=>`<li>${a}</li>`).join('')}</ul>
+            </div>`;
+
+        // Hunter card
+        let hColor, hBg, hLabel, hText;
+        if (hScore <= 30)      { hColor='var(--green)';  hBg='var(--green-dim)';  hLabel='Baixo';    hText='Sem sinais do padrão pré-bust. Valuations razoáveis e/ou spreads saudáveis.'; }
+        else if (hScore <= 55) { hColor='var(--yellow)'; hBg='var(--yellow-dim)'; hLabel='Moderado'; hText='Algumas condições do cenário Hunter presentes. Vigiar CAPE, Buffett e spreads.'; }
+        else if (hScore <= 75) { hColor='var(--orange)'; hBg='var(--orange-dim)'; hLabel='Elevado';  hText='Mercado em zona melt-up: overvaluation + complacência de crédito. Bust risk real.'; }
+        else                   { hColor='var(--red)';    hBg='var(--red-dim)';    hLabel='Crítico';  hText='Máximo bust risk: CAPE/Buffett extremos + spreads comprimidos + VIX suprimido.'; }
+
+        document.getElementById('hunterCard').innerHTML = `
+            <div class="hunter-header">
+                <div class="hunter-title-row">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${hColor}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    <span class="hunter-label">Hunter Bust Risk</span>
+                </div>
+                <span class="hunter-badge" style="background:${hBg};color:${hColor};">${hLabel} · ${hScore}/100</span>
+            </div>
+            <div class="hunter-bar-wrap"><div class="hunter-bar" style="width:${hScore}%;background:${hColor};"></div></div>
+            <div class="hunter-text">${hText}</div>
+            <div class="hunter-quote">"O melt-up vai ser épico. O bust vai ser brutal." — David Hunter</div>`;
+
+        document.getElementById('quote').textContent = quotes[Math.floor(Math.random()*quotes.length)];
+
+        const indicators = [
+            { key:'fg',  name:'Fear & Greed',     value:d.fearGreed.toFixed(0),
+              signal: d.fearGreed<20?'STRONG_BUY':d.fearGreed<35?'BUY':d.fearGreed>75?'SELL':d.fearGreed>60?'CAUTION':'NEUTRAL',
+              desc: d.fearGreed<25?'Medo extremo':d.fearGreed>75?'Ganância extrema':'Sentimento neutro' },
+            { key:'vix', name:'VIX',              value:d.vix.toFixed(1),
+              signal: d.vix>40?'STRONG_BUY':d.vix>28?'BUY':d.vix<13?'SELL':d.vix<17?'CAUTION':'NEUTRAL',
+              desc: d.vix>35?'Pânico — stress máximo':d.vix<14?'Complacência (pré-Hunter)':'Normal' },
+            { key:'buffett', name:'Buffett Indicator', value:d.buffett.toFixed(0)+'%',
+              signal: d.buffett>185?'SELL':d.buffett>165?'CAUTION':d.buffett<100?'BUY':d.buffett<80?'STRONG_BUY':'NEUTRAL',
+              desc: d.buffett>180?'Bolha extrema':d.buffett>150?'Acima do normal estrutural':d.buffett<100?'Barato':'Razoável' },
+            { key:'cape', name:'Shiller CAPE',    value:d.cape.toFixed(1),
+              signal: d.cape>35?'SELL':d.cape>28?'CAUTION':d.cape<18?'BUY':d.cape<14?'STRONG_BUY':'NEUTRAL',
+              desc: d.cape>35?'Zona 1929/2000':d.cape>28?'Caro historicamente':d.cape<18?'Oportunidade histórica':'Razoável' },
+            { key:'ma200', name:'S&P vs MA200',   value:(d.breadth>=0?'+':'')+d.breadth.toFixed(1)+'%',
+              signal: d.breadth<-20?'STRONG_BUY':d.breadth<-8?'BUY':d.breadth>20?'SELL':d.breadth>12?'CAUTION':'NEUTRAL',
+              desc: d.breadth<-15?'Sobrevenda extrema':d.breadth>15?'Sobrecomprado':'Próximo da tendência' },
+            { key:'hy', name:'HY Spread',         value:d.hySpread.toFixed(2)+'%',
+              signal: d.hySpread>8?'STRONG_BUY':d.hySpread>5?'BUY':d.hySpread<2.5?'SELL':d.hySpread<3.5?'CAUTION':'NEUTRAL',
+              desc: d.hySpread>8?'Stress de crédito severo':d.hySpread<3?'Complacência extrema (Hunter)':'Normal' }
         ];
 
-        async function fetchData() {
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('content').style.display = 'none';
-
-            try {
-                // Buscar dados reais da API
-                const response = await fetch('/api/data');
-                const data = await response.json();
-                
-                displayResults(data);
-            } catch (error) {
-                console.error('Erro ao buscar dados:', error);
-                
-                // Fallback para dados simulados se API falhar
-                console.log('Usando dados simulados como fallback...');
-                const simulatedData = {
-                    fearGreed: Math.floor(Math.random() * 100),
-                    vix: 12 + Math.random() * 30,
-                    buffett: 80 + Math.random() * 60,
-                    cape: 15 + Math.random() * 20,
-                    breadth: -15 + Math.random() * 30,
-                    hySpread: 2 + Math.random() * 8
-                };
-                
-                displayResults(simulatedData);
-            }
-        }
-
-        function displayResults(data) {
-            const scores = {
-                fearGreed: data.fearGreed,
-                vix: 100 - Math.min(100, Math.max(0, ((data.vix - 10) / 30) * 100)),
-                buffett: Math.min(100, Math.max(0, ((data.buffett - 60) / 80) * 100)),
-                cape: Math.min(100, Math.max(0, ((data.cape - 10) / 25) * 100)),
-                breadth: Math.min(100, Math.max(0, 50 + data.breadth * 2)),
-                hySpread: 100 - Math.min(100, Math.max(0, (data.hySpread / 10) * 100))
-            };
-
-            const finalScore = Math.round(
-                scores.fearGreed * 0.30 +
-                scores.vix * 0.20 +
-                scores.buffett * 0.15 +
-                scores.cape * 0.15 +
-                scores.breadth * 0.10 +
-                scores.hySpread * 0.10
-            );
-
-            let message, advice, isWarning;
-            
-            if (finalScore <= 20) {
-                message = "🟢🟢 COMPRA AGRESSIVA";
-                advice = [
-                    "Pessimismo extremo detectado",
-                    "Altura de ser ganancioso quando outros têm medo",
-                    "Aumenta exposição a acções de qualidade",
-                    "Usa dollar-cost averaging se ainda incerto"
-                ];
-                isWarning = false;
-            } else if (finalScore <= 35) {
-                message = "🟢 BOA OPORTUNIDADE";
-                advice = [
-                    "Medo acima do normal no mercado",
-                    "Acumula posições gradualmente",
-                    "Procura empresas de qualidade com desconto"
-                ];
-                isWarning = false;
-            } else if (finalScore <= 65) {
-                message = "🟡 MERCADO NEUTRO";
-                advice = [
-                    "Sem sinais claros de extremo",
-                    "Mantém posições actuais",
-                    "Prepara lista de compras para próxima correcção"
-                ];
-                isWarning = false;
-            } else if (finalScore <= 80) {
-                message = "🟠 CAUTELA RECOMENDADA";
-                advice = [
-                    "Euforia acima do normal",
-                    "Considera reduzir exposição",
-                    "Evita FOMO (fear of missing out)",
-                    "Aumenta reserva de cash"
-                ];
-                isWarning = true;
-            } else {
-                message = "🔴🔴 VENDER/PROTEGER";
-                advice = [
-                    "Euforia extrema detectada",
-                    "Altura de ser cauteloso quando outros são gananciosos",
-                    "Realiza lucros em posições sobrevalorizadas",
-                    "Aumenta significativamente cash/bonds"
-                ];
-                isWarning = true;
-            }
-
-            document.getElementById('scoreNumber').textContent = finalScore;
-            document.getElementById('scoreMessage').textContent = message;
-            document.getElementById('gaugePointer').style.left = `calc(${finalScore}% - 1.5px)`;
-
-            const adviceHTML = `
-                <div class="advice-section ${isWarning ? 'warning' : ''}">
-                    <h3>💡 Recomendações Contrarian</h3>
-                    <ul class="advice-list">
-                        ${advice.map(a => `<li>${a}</li>`).join('')}
-                    </ul>
-                </div>
-            `;
-            document.getElementById('adviceSection').innerHTML = adviceHTML;
-            document.getElementById('quote').textContent = quotes[Math.floor(Math.random() * quotes.length)];
-
-            const indicators = [
-                {
-                    name: 'Fear & Greed Index',
-                    value: data.fearGreed.toFixed(0),
-                    signal: data.fearGreed < 20 ? 'STRONG_BUY' : data.fearGreed < 35 ? 'BUY' : 
-                            data.fearGreed > 75 ? 'SELL' : data.fearGreed > 65 ? 'CAUTION' : 'NEUTRAL',
-                    description: data.fearGreed < 25 ? 'Medo extremo no mercado' : 
-                                data.fearGreed > 75 ? 'Ganância extrema' : 'Sentimento neutro'
-                },
-                {
-                    name: 'VIX (Volatilidade)',
-                    value: data.vix.toFixed(1),
-                    signal: data.vix > 35 ? 'STRONG_BUY' : data.vix > 25 ? 'BUY' :
-                            data.vix < 12 ? 'SELL' : data.vix < 15 ? 'CAUTION' : 'NEUTRAL',
-                    description: data.vix > 30 ? 'Pânico no mercado' : 
-                                data.vix < 15 ? 'Complacência perigosa' : 'Normal'
-                },
-                {
-                    name: 'Buffett Indicator',
-                    value: data.buffett.toFixed(0) + '%',
-                    signal: data.buffett > 140 ? 'SELL' : data.buffett > 120 ? 'CAUTION' :
-                            data.buffett < 80 ? 'BUY' : data.buffett < 60 ? 'STRONG_BUY' : 'NEUTRAL',
-                    description: data.buffett > 140 ? 'Mercado muito caro' : 
-                                data.buffett < 80 ? 'Mercado barato' : 'Valorização justa'
-                },
-                {
-                    name: 'Shiller P/E (CAPE)',
-                    value: data.cape.toFixed(1),
-                    signal: data.cape > 30 ? 'SELL' : data.cape > 25 ? 'CAUTION' :
-                            data.cape < 18 ? 'BUY' : data.cape < 15 ? 'STRONG_BUY' : 'NEUTRAL',
-                    description: data.cape > 30 ? 'Historicamente caro' : 
-                                data.cape < 18 ? 'Historicamente barato' : 'Razoável'
-                },
-                {
-                    name: 'S&P vs MA200',
-                    value: data.breadth.toFixed(1) + '%',
-                    signal: data.breadth < -15 ? 'STRONG_BUY' : data.breadth < -5 ? 'BUY' :
-                            data.breadth > 15 ? 'SELL' : data.breadth > 10 ? 'CAUTION' : 'NEUTRAL',
-                    description: data.breadth < -10 ? 'Muito abaixo da média' : 
-                                data.breadth > 10 ? 'Muito acima da média' : 'Próximo da média'
-                },
-                {
-                    name: 'High Yield Spread',
-                    value: data.hySpread.toFixed(2) + '%',
-                    signal: data.hySpread > 8 ? 'STRONG_BUY' : data.hySpread > 5 ? 'BUY' :
-                            data.hySpread < 3 ? 'SELL' : 'NEUTRAL',
-                    description: data.hySpread > 8 ? 'Stress de crédito elevado' : 
-                                data.hySpread < 3 ? 'Complacência de crédito' : 'Normal'
-                }
-            ];
-
-            const indicatorsHTML = indicators.map(ind => `
-                <div class="indicator-card">
-                    <div class="indicator-header">
+        document.getElementById('indicatorsGrid').innerHTML = indicators.map(ind => `
+            <div class="indicator-card">
+                <div class="indicator-header">
+                    <div class="indicator-name-row">
+                        <div class="indicator-icon">${ICONS[ind.key]||''}</div>
                         <div class="indicator-name">${ind.name}</div>
-                        <div class="indicator-signal signal-${ind.signal.replace(' ', '_')}">${ind.signal}</div>
                     </div>
-                    <div class="indicator-value">${ind.value}</div>
-                    <div class="indicator-description">${ind.description}</div>
+                    <div class="indicator-signal signal-${ind.signal}">${SIGNAL_LABELS[ind.signal]||ind.signal}</div>
                 </div>
-            `).join('');
+                <div class="indicator-row2">
+                    <div class="indicator-value">${ind.value}</div>
+                    <div class="indicator-desc">${ind.desc}</div>
+                </div>
+            </div>`).join('');
 
-            document.getElementById('indicatorsGrid').innerHTML = indicatorsHTML;
-            document.getElementById('lastUpdate').textContent = 
-                `Última actualização: ${new Date().toLocaleString('pt-PT')}`;
+        document.getElementById('lastUpdate').textContent =
+            `Actualizado: ${new Date().toLocaleString('pt-PT')}`;
 
-            saveToHistory(finalScore, message);
+        saveToHistory(score, badgeText);
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('content').style.display = 'block';
+    }
 
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('content').style.display = 'block';
-        }
+    function saveToHistory(score, label) {
+        const h = JSON.parse(localStorage.getItem('contrarian_history')||'[]');
+        h.unshift({ date:new Date().toISOString(), score, label });
+        localStorage.setItem('contrarian_history', JSON.stringify(h.slice(0,20)));
+    }
 
-        function saveToHistory(score, message) {
-            let history = JSON.parse(localStorage.getItem('contrarian_history') || '[]');
-            history.unshift({
-                date: new Date().toISOString(),
-                score: score,
-                message: message
+    const showAbout      = () => document.getElementById('aboutModal').style.display='block';
+    const closeAbout     = () => document.getElementById('aboutModal').style.display='none';
+    const showIndicators = () => document.getElementById('indicatorsModal').style.display='block';
+    const closeIndicators= () => document.getElementById('indicatorsModal').style.display='none';
+
+    function showHistory() {
+        const h = JSON.parse(localStorage.getItem('contrarian_history')||'[]');
+        document.getElementById('historyContent').innerHTML = h.length===0
+            ? '<p style="text-align:center;color:var(--muted);padding:20px;">Sem histórico ainda</p>'
+            : h.map(e=>`
+                <div class="history-item">
+                    <div class="history-date">${new Date(e.date).toLocaleString('pt-PT')}</div>
+                    <div class="history-score">${e.score}<span style="font-size:0.5em;color:var(--muted);margin-left:4px;">/100</span></div>
+                    <div style="font-size:0.78em;color:var(--muted);margin-top:2px;">${e.label}</div>
+                </div>`).join('');
+        document.getElementById('historyModal').style.display='block';
+    }
+    const closeHistory = () => document.getElementById('historyModal').style.display='none';
+
+    document.querySelectorAll('.modal').forEach(m =>
+        m.addEventListener('click', e => { if (e.target===m) m.style.display='none'; }));
+
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', e => {
+        e.preventDefault(); deferredPrompt=e;
+        document.getElementById('installPrompt').style.display='flex';
+    });
+    function installApp() {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then(()=>{
+                document.getElementById('installPrompt').style.display='none';
+                deferredPrompt=null;
             });
-            history = history.slice(0, 20);
-            localStorage.setItem('contrarian_history', JSON.stringify(history));
         }
+    }
 
-        function showAbout() {
-            document.getElementById('aboutModal').style.display = 'block';
+
+    // ── ALERTS ──────────────────────────────────────────────────────────────────
+
+    function syncSlider(el, valId, offLabel) {
+        const v = parseInt(el.value);
+        const min = parseInt(el.min), max = parseInt(el.max);
+        const pct = ((v - min) / (max - min) * 100).toFixed(1) + '%';
+        el.style.setProperty('--pct', pct);
+        const display = (offLabel === 'OFF' && v === 0) ? 'OFF' : v;
+        document.getElementById(valId).textContent = display;
+    }
+
+    function updateAlertDot() {
+        const enabled = document.getElementById('alertEnabled').checked;
+        const dot = document.getElementById('alertDot');
+        if (dot) dot.style.display = enabled ? 'block' : 'none';
+    }
+
+    async function loadAlertConfig() {
+        try {
+            const r = await fetch('/api/alerts/config');
+            const cfg = await r.json();
+            document.getElementById('alertEnabled').checked   = cfg.enabled;
+            document.getElementById('alertEmail').value       = cfg.email_to || '';
+            document.getElementById('buyThreshold').value     = cfg.buy_threshold;
+            document.getElementById('sellThreshold').value    = cfg.sell_threshold;
+            document.getElementById('hunterThreshold').value  = cfg.hunter_threshold;
+            document.getElementById('alertInterval').value    = cfg.check_interval;
+            // sync slider visuals
+            ['buyThreshold','sellThreshold','hunterThreshold'].forEach(id => {
+                const el = document.getElementById(id);
+                const offLabel = id === 'hunterThreshold' ? 'OFF' : '--';
+                syncSlider(el, id.replace('Threshold','Val'), offLabel);
+            });
+            updateAlertDot();
+
+            // Load last sent times
+            const sr = await fetch('/api/alerts/status');
+            const st = await sr.json();
+            const parts = [];
+            if (st.buy)    parts.push('Compra: ' + new Date(st.buy).toLocaleString('pt-PT'));
+            if (st.sell)   parts.push('Venda: '  + new Date(st.sell).toLocaleString('pt-PT'));
+            if (st.hunter) parts.push('Hunter: ' + new Date(st.hunter).toLocaleString('pt-PT'));
+            document.getElementById('alertLastSent').textContent =
+                parts.length ? 'Último envio — ' + parts.join(' · ') : '';
+        } catch(e) {
+            console.log('Alertas: backend não disponível', e);
         }
+    }
 
-        function closeAbout() {
-            document.getElementById('aboutModal').style.display = 'none';
-        }
-
-        function showIndicators() {
-            document.getElementById('indicatorsModal').style.display = 'block';
-        }
-
-        function closeIndicators() {
-            document.getElementById('indicatorsModal').style.display = 'none';
-        }
-
-        function showHistory() {
-            const history = JSON.parse(localStorage.getItem('contrarian_history') || '[]');
-            
-            if (history.length === 0) {
-                document.getElementById('historyContent').innerHTML = 
-                    '<p style="text-align: center; opacity: 0.7;">Sem histórico ainda</p>';
+    async function saveAlerts() {
+        const status = document.getElementById('alertStatus');
+        status.textContent = 'A guardar...';
+        status.className = 'alert-status';
+        try {
+            const r = await fetch('/api/alerts/config', {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({
+                    enabled:          document.getElementById('alertEnabled').checked,
+                    email_to:         document.getElementById('alertEmail').value.trim(),
+                    buy_threshold:    parseInt(document.getElementById('buyThreshold').value),
+                    sell_threshold:   parseInt(document.getElementById('sellThreshold').value),
+                    hunter_threshold: parseInt(document.getElementById('hunterThreshold').value),
+                    check_interval:   parseInt(document.getElementById('alertInterval').value),
+                })
+            });
+            const res = await r.json();
+            if (res.ok) {
+                status.textContent = 'Guardado com sucesso';
+                status.className = 'alert-status status-ok';
+                updateAlertDot();
             } else {
-                const historyHTML = history.map(h => `
-                    <div class="history-item">
-                        <div class="history-date">${new Date(h.date).toLocaleString('pt-PT')}</div>
-                        <div class="history-score">Score: ${h.score}/100</div>
-                        <div style="margin-top: 5px;">${h.message}</div>
-                    </div>
-                `).join('');
-                document.getElementById('historyContent').innerHTML = historyHTML;
+                throw new Error('Resposta inesperada');
             }
-            
-            document.getElementById('historyModal').style.display = 'block';
+        } catch(e) {
+            status.textContent = 'Erro ao guardar — backend disponível?';
+            status.className = 'alert-status status-err';
         }
+    }
 
-        function closeHistory() {
-            document.getElementById('historyModal').style.display = 'none';
+    async function testAlert() {
+        const status = document.getElementById('alertStatus');
+        status.textContent = 'A enviar email de teste...';
+        status.className = 'alert-status';
+        try {
+            const r = await fetch('/api/alerts/test', { method:'POST' });
+            const res = await r.json();
+            status.textContent = res.message;
+            status.className = 'alert-status ' + (res.ok ? 'status-ok' : 'status-err');
+        } catch(e) {
+            status.textContent = 'Erro — backend disponível?';
+            status.className = 'alert-status status-err';
         }
+    }
 
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            document.getElementById('installPrompt').style.display = 'flex';
-        });
+    function showAlerts() {
+        loadAlertConfig();
+        document.getElementById('alertsModal').style.display = 'block';
+    }
+    function closeAlerts() { document.getElementById('alertsModal').style.display = 'none'; }
 
-        function installApp() {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choiceResult) => {
-                    if (choiceResult.outcome === 'accepted') {
-                        document.getElementById('installPrompt').style.display = 'none';
-                    }
-                    deferredPrompt = null;
-                });
-            }
-        }
+    // Add dot element to alerts button
+    document.getElementById('btnAlerts').insertAdjacentHTML('afterbegin',
+        '<div class="alert-dot" id="alertDot" style="display:none;"></div>');
 
-        fetchData();
-    </script>
+    fetchData();
+</script>
+
+<!-- Modal Alertas -->
+<div class="modal" id="alertsModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Alertas por Email</h2>
+            <div class="close-btn" onclick="closeAlerts()">&#x2715;</div>
+        </div>
+
+        <div class="toggle-row">
+            <div>
+                <div class="toggle-label">Activar alertas</div>
+                <div class="toggle-sub">Recebes email quando o score atingir os teus limites</div>
+            </div>
+            <label class="toggle">
+                <input type="checkbox" id="alertEnabled" onchange="updateAlertDot()">
+                <div class="toggle-track"></div>
+                <div class="toggle-thumb"></div>
+            </label>
+        </div>
+
+        <div class="field-wrap">
+            <div class="field-label">Email de destino</div>
+            <input type="email" id="alertEmail" placeholder="o_teu_email@gmail.com">
+        </div>
+
+        <div class="msec">
+            <div class="threshold-row">
+                <div class="threshold-header">
+                    <span class="threshold-name" style="color:var(--green);">Score de Compra</span>
+                    <span class="threshold-value" id="buyVal" style="color:var(--green);">30</span>
+                </div>
+                <input type="range" id="buyThreshold" min="5" max="50" value="30"
+                    oninput="syncSlider(this,'buyVal','--')"
+                    style="--pct:50%">
+                <div style="font-size:0.73em;color:var(--muted);margin-top:6px;">Notifica quando score &le; este valor</div>
+            </div>
+            <div class="threshold-row">
+                <div class="threshold-header">
+                    <span class="threshold-name" style="color:var(--red);">Score de Venda</span>
+                    <span class="threshold-value" id="sellVal" style="color:var(--red);">70</span>
+                </div>
+                <input type="range" id="sellThreshold" min="50" max="95" value="70"
+                    oninput="syncSlider(this,'sellVal','--')"
+                    style="--pct:44%">
+                <div style="font-size:0.73em;color:var(--muted);margin-top:6px;">Notifica quando score &ge; este valor</div>
+            </div>
+            <div class="threshold-row" style="margin-bottom:0;">
+                <div class="threshold-header">
+                    <span class="threshold-name" style="color:var(--orange);">Hunter Bust Risk</span>
+                    <span class="threshold-value" id="hunterVal" style="color:var(--orange);">75</span>
+                </div>
+                <input type="range" id="hunterThreshold" min="0" max="95" value="75"
+                    oninput="syncSlider(this,'hunterVal','OFF')"
+                    style="--pct:79%">
+                <div style="font-size:0.73em;color:var(--muted);margin-top:6px;">0 = desactivado &nbsp;|&nbsp; Notifica quando Hunter &ge; este valor</div>
+            </div>
+        </div>
+
+        <div class="field-wrap">
+            <div class="field-label">Verificar de</div>
+            <select class="interval-select" id="alertInterval" style="width:100%;padding:10px 12px;border-radius:8px;background:var(--border);border:1px solid var(--border2);color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.85em;outline:none;">
+                <option value="15">15 em 15 minutos</option>
+                <option value="30" selected>30 em 30 minutos</option>
+                <option value="60">De hora a hora</option>
+                <option value="120">De 2 em 2 horas</option>
+                <option value="360">De 6 em 6 horas</option>
+            </select>
+        </div>
+
+        <div class="msec" style="font-size:0.78em;color:var(--muted);line-height:1.6;">
+            O mesmo tipo de alerta nunca dispara mais de uma vez em 6 horas, para evitar spam.
+            Configura as credenciais SMTP nas variáveis de ambiente do Render.
+        </div>
+
+        <button class="btn-full btn-save" onclick="saveAlerts()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Guardar
+        </button>
+        <button class="btn-full btn-test" onclick="testAlert()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.58 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            Enviar Email de Teste
+        </button>
+        <div class="alert-status" id="alertStatus"></div>
+
+        <div id="alertLastSent" style="margin-top:10px;font-size:0.72em;color:var(--muted);font-family:'DM Mono',monospace;"></div>
+    </div>
+</div>
+
 </body>
 </html>
