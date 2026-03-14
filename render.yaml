@@ -10,3 +10,47 @@ services:
         sync: false
       - key: FRED_KEY
         sync: false
+      - key: ALERT_SMTP_HOST
+        sync: false
+      - key: ALERT_SMTP_PORT
+        sync: false
+      - key: ALERT_SMTP_USER
+        sync: false
+      - key: ALERT_SMTP_PASS
+        sync: false
+      - key: ALERT_EMAIL_TO
+        sync: false
+      - key: ALERT_BUY_THRESHOLD
+        value: "30"
+      - key: ALERT_SELL_THRESHOLD
+        value: "70"
+      - key: ALERT_HUNTER_THRESHOLD
+        value: "75"
+      - key: ALERT_API_URL
+        value: "https://indicador-nb.onrender.com/api/data"
+
+  - type: cron
+    name: indicador-nb-alerter
+    runtime: python
+    schedule: "*/30 * * * *"
+    buildCommand: pip install requests
+    startCommand: python alerter.py
+    envVars:
+      - key: ALERT_SMTP_HOST
+        sync: false
+      - key: ALERT_SMTP_PORT
+        sync: false
+      - key: ALERT_SMTP_USER
+        sync: false
+      - key: ALERT_SMTP_PASS
+        sync: false
+      - key: ALERT_EMAIL_TO
+        sync: false
+      - key: ALERT_BUY_THRESHOLD
+        value: "30"
+      - key: ALERT_SELL_THRESHOLD
+        value: "70"
+      - key: ALERT_HUNTER_THRESHOLD
+        value: "75"
+      - key: ALERT_API_URL
+        value: "https://indicador-nb.onrender.com/api/data"
