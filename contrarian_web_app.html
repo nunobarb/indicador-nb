@@ -18,6 +18,7 @@
             --border2:    #252a3a;
             --text:       #dde1ec;
             --muted:      #5c6480;
+            --muted2:     #7a82a0;
             --accent:     #f0b429;
             --accent-dim: #f0b42922;
             --green:      #00c896;
@@ -296,36 +297,6 @@
             .btn { font-size:0.67em; }
         }
 
-        /* ALERTS */
-        .alert-dot { position:absolute; top:-3px; right:-3px; width:8px; height:8px; border-radius:50%; background:var(--green); border:2px solid var(--bg); }
-        .btn-alerts { position:relative; }
-        .toggle-row { display:flex; align-items:center; justify-content:space-between; padding:14px; background:var(--bg); border-radius:10px; margin-bottom:10px; }
-        .toggle-label { font-size:0.85em; font-weight:600; }
-        .toggle-sub { font-size:0.73em; color:var(--muted); margin-top:2px; }
-        .toggle { position:relative; width:42px; height:24px; cursor:pointer; flex-shrink:0; }
-        .toggle input { opacity:0; width:0; height:0; position:absolute; }
-        .toggle-track { position:absolute; inset:0; background:var(--border2); border-radius:12px; transition:background 0.2s; }
-        .toggle input:checked + .toggle-track { background:var(--green); }
-        .toggle-thumb { position:absolute; width:18px; height:18px; background:#fff; border-radius:50%; top:3px; left:3px; transition:left 0.2s; pointer-events:none; }
-        .toggle input:checked ~ .toggle-thumb { left:21px; }
-        .threshold-row { margin-bottom:16px; }
-        .threshold-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
-        .threshold-name { font-size:0.82em; font-weight:600; }
-        .threshold-value { font-family:'DM Mono',monospace; font-size:0.82em; background:var(--border2); padding:3px 10px; border-radius:5px; min-width:52px; text-align:center; }
-        input[type=range] { width:100%; height:4px; border-radius:2px; cursor:pointer; -webkit-appearance:none; appearance:none; background:linear-gradient(to right, var(--accent) 0%, var(--accent) var(--pct,50%), var(--border2) var(--pct,50%)); outline:none; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:16px; height:16px; border-radius:50%; background:var(--text); cursor:pointer; box-shadow:0 0 0 3px var(--surface); }
-        input[type=email] { width:100%; padding:10px 12px; border-radius:8px; background:var(--border); border:1px solid var(--border2); color:var(--text); font-family:'DM Sans',sans-serif; font-size:0.85em; outline:none; transition:border-color 0.2s; }
-        input[type=email]:focus { border-color:var(--accent); }
-        .field-label { font-size:0.73em; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
-        .field-wrap { margin-bottom:14px; }
-        .alert-status { font-size:0.75em; color:var(--muted); font-family:'DM Mono',monospace; margin-top:6px; min-height:16px; }
-        .status-ok { color:var(--green); }
-        .status-err { color:var(--red); }
-        .btn-full { width:100%; padding:12px; border:none; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:0.85em; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; transition:opacity 0.15s; }
-        .btn-full:active { opacity:0.75; }
-        .btn-save { background:var(--accent); color:#0d0f14; margin-bottom:8px; }
-        .btn-test { background:var(--surface); color:var(--text); border:1px solid var(--border2); }
-        .btn-full svg { width:14px; height:14px; }
     </style>
 </head>
 <body>
@@ -406,10 +377,6 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
         Pesos
     </button>
-    <button class="btn btn-secondary btn-alerts" onclick="showAlerts()" id="btnAlerts">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-        Alertas
-    </button>
 </div>
 
 <!-- Modal Sobre -->
@@ -447,7 +414,7 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                 Fear &amp; Greed Index
             </div>
-            <div class="msec-sub">Peso: 20% · Fonte: CNN / Alternative.me</div>
+            <div class="msec-sub">Peso: 30% · Fonte: CNN / Alternative.me</div>
             <p>Mede o sentimento do mercado de 0 a 100, agregando 7 sub-indicadores: momentum, força de acções, volatilidade e opções. Em Março 2020 chegou a 12. Quem comprou nessa altura ganhou +80% em 12 meses.</p>
         </div>
         <div class="msec">
@@ -455,7 +422,7 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
                 VIX — Índice de Volatilidade
             </div>
-            <div class="msec-sub">Peso: 15% · Fonte: CBOE / FRED · Range: 10–55</div>
+            <div class="msec-sub">Peso: 20% · Fonte: CBOE / FRED · Range: 10–55</div>
             <p>O índice do medo da bolsa de Chicago. Acima de 35 significa pânico. Abaixo de 13 significa complacência perigosa — volatilidade comprimida antes de um bust.</p>
         </div>
         <div class="msec">
@@ -463,7 +430,7 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
                 Buffett Indicator
             </div>
-            <div class="msec-sub">Peso: 20% · Fonte: FRED · Range recalibrado: 80–220%</div>
+            <div class="msec-sub">Peso: 10% · Fonte: FRED · Range recalibrado: 80–220%</div>
             <p>Capitalização total da bolsa ÷ PIB dos EUA. Thresholds actualizados para o novo normal pós-2010 — o ratio estrutural subiu com a globalização das receitas e as recompras de acções.</p>
         </div>
         <div class="msec">
@@ -471,7 +438,7 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
                 Shiller P/E (CAPE)
             </div>
-            <div class="msec-sub">Peso: 20% · Fonte: Robert Shiller / Yale · Range: 10–45</div>
+            <div class="msec-sub">Peso: 10% · Fonte: Robert Shiller / Yale · Range: 10–45</div>
             <p>Preço do mercado vs. lucros médios dos últimos 10 anos ajustados à inflação. Média histórica: 17. Em 1929 estava em 33, em 2000 chegou a 44, em 2009 caiu a 13.</p>
         </div>
         <div class="msec">
@@ -479,7 +446,7 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
                 S&amp;P 500 vs Média 200 Dias
             </div>
-            <div class="msec-sub">Peso: 10% · Fonte: FRED · Score contínuo ±30%</div>
+            <div class="msec-sub">Peso: 15% · Fonte: FRED · Score contínuo ±30%</div>
             <p>Desvio percentual do mercado em relação à tendência de longo prazo. Contínuo, não binário — cobre o range histórico de ±30%.</p>
         </div>
         <div class="msec">
@@ -500,14 +467,14 @@
                 <tr><td>Buffett Indicator</td><td>10%</td></tr>
                 <tr><td>Shiller P/E (CAPE)</td><td>10%</td></tr>
             </table>
-            <p style="margin-top:9px; font-size:0.76em;">Score 0–35 = zona de compra · Score 65–100 = zona de cautela</p>
+            <p style="margin-top:9px; font-size:0.76em;">Score 0–42 = zona de compra · Score 62–78 = cautela · Score 78+ = vender</p>
         </div>
         <div class="msec" style="border-left:3px solid var(--red);">
             <div class="msec-title" style="color:var(--red);">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                 Risco de Bear Market Secular
             </div>
-            <p>Mede a probabilidade de estarmos no final de um melt-up antes de um bust severo. Combina overvaluation extrema (CAPE + Buffett), complacência de crédito (HY Spread baixo) e volatilidade suprimida (VIX baixo).</p>
+            <p>Mede a probabilidade de um bear market secular no SPX. Combina sobrevalorização extrema (CAPE + Buffett), complacência de crédito (HY Spread baixo) e volatilidade suprimida (VIX baixo). Só activa quando há euforia E complacência em simultâneo — em fases de pânico fica baixo por definição.</p>
             <p style="margin-top:7px; font-style:italic; font-size:0.88em;">"Mercados sobem pela escada, descem pelo elevador." — investidores contrarian</p>
         </div>
     </div>
@@ -557,13 +524,14 @@
             const r = await fetch('/api/data');
             displayResults(await r.json());
         } catch {
+            // Fallback com últimos valores conhecidos do mercado (Março 2026)
             displayResults({
-                fearGreed: Math.floor(Math.random() * 100),
-                vix:       12 + Math.random() * 30,
-                buffett:   80 + Math.random() * 60,
-                cape:      15 + Math.random() * 20,
-                breadth:   -15 + Math.random() * 30,
-                hySpread:  2 + Math.random() * 8
+                fearGreed: 12,
+                vix:       24.1,
+                buffett:   185,
+                cape:      31.0,
+                breadth:   -1.7,
+                hySpread:  3.27
             });
         }
     }
@@ -669,7 +637,7 @@
             };
         }
 
-        const gaugeColor = score <= 35 ? 'var(--green)' : score <= 65 ? 'var(--yellow)' : 'var(--red)';
+        const gaugeColor = score <= 42 ? 'var(--green)' : score <= 62 ? 'var(--yellow)' : 'var(--red)';
 
         document.getElementById('scoreNumber').innerHTML = `${score}<span class="denom">/100</span>`;
         const badge = document.getElementById('scoreBadge');
@@ -706,10 +674,10 @@
         let hColor, hBg, hLabel, hText;
         if (hScore <= 20) {
             hColor='var(--green)'; hBg='var(--green-dim)'; hLabel='Fase de acumulação';
-            hText='Sem condições de bust. Sentimento negativo ou VIX elevado — Sem condições de bear market secular. Mantém posição.';
+            hText='Sem condições de bear market secular. Sentimento negativo e/ou VIX elevado — mantém posição e aguarda o desenvolvimento do ciclo.';
         } else if (hScore <= 45) {
             hColor='var(--yellow)'; hBg='var(--yellow-dim)'; hLabel='Risco moderado';
-            hText='Euforia e complacência a crescer. Euforia e complacência a crescer — monitorizar F&G, VIX e spreads de crédito.';
+            hText='Euforia e complacência a crescer. Monitorizar F&G, VIX e spreads de crédito — o topo ainda não está formado.';
         } else if (hScore <= 70) {
             hColor='var(--orange)'; hBg='var(--orange-dim)'; hLabel='Risco elevado';
             hText='Euforia + VIX suprimido + spreads colados. Começar a reduzir exposição gradualmente.';
@@ -819,202 +787,10 @@
         }
     }
 
-
-    // ── ALERTS ──────────────────────────────────────────────────────────────────
-
-    function syncSlider(el, valId, offLabel) {
-        const v = parseInt(el.value);
-        const min = parseInt(el.min), max = parseInt(el.max);
-        const pct = ((v - min) / (max - min) * 100).toFixed(1) + '%';
-        el.style.setProperty('--pct', pct);
-        const display = (offLabel === 'OFF' && v === 0) ? 'OFF' : v;
-        document.getElementById(valId).textContent = display;
-    }
-
-    function updateAlertDot() {
-        const enabled = document.getElementById('alertEnabled').checked;
-        const dot = document.getElementById('alertDot');
-        if (dot) dot.style.display = enabled ? 'block' : 'none';
-    }
-
-    async function loadAlertConfig() {
-        try {
-            const r = await fetch('/api/alerts/config');
-            const cfg = await r.json();
-            document.getElementById('alertEnabled').checked   = cfg.enabled;
-            document.getElementById('alertEmail').value       = cfg.email_to || '';
-            document.getElementById('buyThreshold').value     = cfg.buy_threshold;
-            document.getElementById('sellThreshold').value    = cfg.sell_threshold;
-            document.getElementById('bustThreshold').value  = cfg.bust_threshold;
-            document.getElementById('alertInterval').value    = cfg.check_interval;
-            // sync slider visuals
-            ['buyThreshold','sellThreshold','bustThreshold'].forEach(id => {
-                const el = document.getElementById(id);
-                const offLabel = id === 'bustThreshold' ? 'OFF' : '--';
-                syncSlider(el, id.replace('Threshold','Val'), offLabel);
-            });
-            updateAlertDot();
-
-            // Load last sent times
-            const sr = await fetch('/api/alerts/status');
-            const st = await sr.json();
-            const parts = [];
-            if (st.buy)    parts.push('Compra: ' + new Date(st.buy).toLocaleString('pt-PT'));
-            if (st.sell)   parts.push('Venda: '  + new Date(st.sell).toLocaleString('pt-PT'));
-            if (st.bust) parts.push('Bust: ' + new Date(st.bust).toLocaleString('pt-PT'));
-            document.getElementById('alertLastSent').textContent =
-                parts.length ? 'Último envio — ' + parts.join(' · ') : '';
-        } catch(e) {
-            console.log('Alertas: backend não disponível', e);
-        }
-    }
-
-    async function saveAlerts() {
-        const status = document.getElementById('alertStatus');
-        status.textContent = 'A guardar...';
-        status.className = 'alert-status';
-        try {
-            const r = await fetch('/api/alerts/config', {
-                method: 'POST',
-                headers: {'Content-Type':'application/json'},
-                body: JSON.stringify({
-                    enabled:          document.getElementById('alertEnabled').checked,
-                    email_to:         document.getElementById('alertEmail').value.trim(),
-                    buy_threshold:    parseInt(document.getElementById('buyThreshold').value),
-                    sell_threshold:   parseInt(document.getElementById('sellThreshold').value),
-                    bust_threshold: parseInt(document.getElementById('bustThreshold').value),
-                    check_interval:   parseInt(document.getElementById('alertInterval').value),
-                })
-            });
-            const res = await r.json();
-            if (res.ok) {
-                status.textContent = 'Guardado com sucesso';
-                status.className = 'alert-status status-ok';
-                updateAlertDot();
-            } else {
-                throw new Error('Resposta inesperada');
-            }
-        } catch(e) {
-            status.textContent = 'Erro ao guardar — backend disponível?';
-            status.className = 'alert-status status-err';
-        }
-    }
-
-    async function testAlert() {
-        const status = document.getElementById('alertStatus');
-        status.textContent = 'A enviar email de teste...';
-        status.className = 'alert-status';
-        try {
-            const r = await fetch('/api/alerts/test', { method:'POST' });
-            const res = await r.json();
-            status.textContent = res.message;
-            status.className = 'alert-status ' + (res.ok ? 'status-ok' : 'status-err');
-        } catch(e) {
-            status.textContent = 'Erro — backend disponível?';
-            status.className = 'alert-status status-err';
-        }
-    }
-
-    function showAlerts() {
-        loadAlertConfig();
-        document.getElementById('alertsModal').style.display = 'block';
-    }
-    function closeAlerts() { document.getElementById('alertsModal').style.display = 'none'; }
-
-    // Add dot element to alerts button
-    document.getElementById('btnAlerts').insertAdjacentHTML('afterbegin',
         '<div class="alert-dot" id="alertDot" style="display:none;"></div>');
 
     fetchData();
 </script>
-
-<!-- Modal Alertas -->
-<div class="modal" id="alertsModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2>Alertas por Email</h2>
-            <div class="close-btn" onclick="closeAlerts()">&#x2715;</div>
-        </div>
-
-        <div class="toggle-row">
-            <div>
-                <div class="toggle-label">Activar alertas</div>
-                <div class="toggle-sub">Recebes email quando o score atingir os teus limites</div>
-            </div>
-            <label class="toggle">
-                <input type="checkbox" id="alertEnabled" onchange="updateAlertDot()">
-                <div class="toggle-track"></div>
-                <div class="toggle-thumb"></div>
-            </label>
-        </div>
-
-        <div class="field-wrap">
-            <div class="field-label">Email de destino</div>
-            <input type="email" id="alertEmail" placeholder="o_teu_email@gmail.com">
-        </div>
-
-        <div class="msec">
-            <div class="threshold-row">
-                <div class="threshold-header">
-                    <span class="threshold-name" style="color:var(--green);">Score de Compra</span>
-                    <span class="threshold-value" id="buyVal" style="color:var(--green);">30</span>
-                </div>
-                <input type="range" id="buyThreshold" min="5" max="50" value="30"
-                    oninput="syncSlider(this,'buyVal','--')"
-                    style="--pct:50%">
-                <div style="font-size:0.73em;color:var(--muted);margin-top:6px;">Notifica quando score &le; este valor</div>
-            </div>
-            <div class="threshold-row">
-                <div class="threshold-header">
-                    <span class="threshold-name" style="color:var(--red);">Score de Venda</span>
-                    <span class="threshold-value" id="sellVal" style="color:var(--red);">70</span>
-                </div>
-                <input type="range" id="sellThreshold" min="50" max="95" value="70"
-                    oninput="syncSlider(this,'sellVal','--')"
-                    style="--pct:44%">
-                <div style="font-size:0.73em;color:var(--muted);margin-top:6px;">Notifica quando score &ge; este valor</div>
-            </div>
-            <div class="threshold-row" style="margin-bottom:0;">
-                <div class="threshold-header">
-                    <span class="threshold-name" style="color:var(--orange);">Risco de Bear Market</span>
-                    <span class="threshold-value" id="bustVal" style="color:var(--orange);">75</span>
-                </div>
-                <input type="range" id="bustThreshold" min="0" max="95" value="75"
-                    oninput="syncSlider(this,'bustVal','OFF')"
-                    style="--pct:79%">
-                <div style="font-size:0.73em;color:var(--muted);margin-top:6px;">0 = desactivado &nbsp;|&nbsp; Notifica quando Bust &ge; este valor</div>
-            </div>
-        </div>
-
-        <div class="field-wrap">
-            <div class="field-label">Verificar de</div>
-            <select class="interval-select" id="alertInterval" style="width:100%;padding:10px 12px;border-radius:8px;background:var(--border);border:1px solid var(--border2);color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.85em;outline:none;">
-                <option value="15">15 em 15 minutos</option>
-                <option value="30" selected>30 em 30 minutos</option>
-                <option value="60">De hora a hora</option>
-                <option value="120">De 2 em 2 horas</option>
-                <option value="360">De 6 em 6 horas</option>
-            </select>
-        </div>
-
-        <div class="msec" style="font-size:0.78em;color:var(--muted);line-height:1.6;">
-            O mesmo tipo de alerta nunca dispara mais de uma vez em 6 horas, para evitar spam.
-            Configura as credenciais SMTP nas variáveis de ambiente do Render.
-        </div>
-
-        <button class="btn-full btn-save" onclick="saveAlerts()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-            Guardar
-        </button>
-        <button class="btn-full btn-test" onclick="testAlert()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.58 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-            Enviar Email de Teste
-        </button>
-        <div class="alert-status" id="alertStatus"></div>
-
-        <div id="alertLastSent" style="margin-top:10px;font-size:0.72em;color:var(--muted);font-family:'DM Mono',monospace;"></div>
-    </div>
-</div>
 
 </body>
 </html>
