@@ -493,12 +493,12 @@
         <div class="msec" style="border-left:3px solid var(--accent);">
             <div class="msec-title" style="color:var(--accent);">Ponderação Final</div>
             <table class="weight-table">
-                <tr><td>Fear &amp; Greed Index</td><td>20%</td></tr>
-                <tr><td>VIX</td><td>15%</td></tr>
-                <tr><td>Buffett Indicator</td><td>20%</td></tr>
-                <tr><td>Shiller P/E (CAPE)</td><td>20%</td></tr>
-                <tr><td>S&amp;P vs MA200</td><td>10%</td></tr>
+                <tr><td>Fear &amp; Greed Index</td><td>30%</td></tr>
+                <tr><td>VIX</td><td>20%</td></tr>
+                <tr><td>S&amp;P vs MA200</td><td>15%</td></tr>
                 <tr><td>High Yield Spread</td><td>15%</td></tr>
+                <tr><td>Buffett Indicator</td><td>10%</td></tr>
+                <tr><td>Shiller P/E (CAPE)</td><td>10%</td></tr>
             </table>
             <p style="margin-top:9px; font-size:0.76em;">Score 0–35 = zona de compra · Score 65–100 = zona de cautela</p>
         </div>
@@ -579,7 +579,16 @@
         const s_ma  = clamp(50 + (d.breadth / 30) * 50,            0, 100);
         const s_hy  = 100 - clamp(((d.hySpread - 1.5) / 10.5) * 100, 0, 100);
 
-        const score = Math.round(s_fg*0.20 + s_vix*0.15 + s_buf*0.20 + s_cap*0.20 + s_ma*0.10 + s_hy*0.15);
+        // PESOS: sentimento+técnico=65% (timing), valuation=35% (contexto)
+        // F&G 30% | VIX 20% | MA200 15% | HY 15% | Buffett 10% | CAPE 10%
+        const score = Math.round(
+            s_fg  * 0.30 +   // F&G: timing primário
+            s_vix * 0.20 +   // VIX: pânico/stress
+            s_ma  * 0.15 +   // S&P vs MA200: posição técnica
+            s_hy  * 0.15 +   // HY Spread: crédito
+            s_buf * 0.10 +   // Buffett: contexto valuation
+            s_cap * 0.10     // CAPE: contexto histórico
+        );
 
         // Hunter Bust Risk
         const h_val  = clamp((clamp(((d.cape-22)/18)*100,0,100)*0.5)+(clamp(((d.buffett-130)/80)*100,0,100)*0.5),0,100);
@@ -589,26 +598,38 @@
 
         // Score UI
         let badgeClass, badgeText, advClass, message, advice;
-        if (score <= 20) {
+        // Thresholds ajustados: valuations estruturalmente mais altas no pós-2010
+        // means the composite rarely reaches <20 even in panics — buy zone raised to 42
+        if (score <= 22) {
             badgeClass='badge-buy'; badgeText='Compra Agressiva'; advClass='buy';
             message='Pessimismo extremo — momento histórico de entrada';
             advice=['Altura de ser ganancioso quando outros têm medo','Aumenta exposição a acções de qualidade','DCA se ainda incerto'];
-        } else if (score <= 35) {
+        } else if (score <= 42) {
             badgeClass='badge-buy'; badgeText='Boa Oportunidade'; advClass='buy';
-            message='Medo acima do normal — momento favorável para acumular';
+            message='Sentimento negativo acima do normal — acumular gradualmente';
             advice=['Acumula posições gradualmente','Procura empresas de qualidade com desconto'];
-        } else if (score <= 65) {
+        } else if (score <= 62) {
             badgeClass='badge-neutral'; badgeText='Neutro'; advClass='neutral';
             message='Sem sinais claros de extremo';
             advice=['Mantém posições actuais','Prepara lista de compras para a próxima correcção'];
-        } else if (score <= 80) {
-            badgeClass='badge-caution'; badgeText='Cautela'; advClass='sell';
+        } else if (score <= 78) {
+            badgeClass='badge-caution'; badgeText='Cautela'; advClass='caution';
             message='Euforia acima do normal — reduz exposição progressivamente';
             advice=['Considera reduzir exposição','Evita FOMO','Aumenta reserva de cash'];
         } else {
             badgeClass='badge-sell'; badgeText='Vender / Proteger'; advClass='sell';
             message='Euforia extrema — protege o capital';
             advice=['Realiza lucros em posições sobrevalorizadas','Aumenta significativamente cash e bonds'];
+        }
+
+        // Override: F&G em pânico extremo merece aviso independente do composite
+        const fgOverride = d.fearGreed < 20;
+        const vixOverride = d.vix > 35;
+        let overrideMsg = '';
+        if (fgOverride && score > 42) {
+            overrideMsg = 'Sentimento em pânico extremo (F&G ' + d.fearGreed.toFixed(0) + ') — valuations ainda elevadas, mas entradas faseadas historicamente rentáveis.';
+        } else if (vixOverride && score > 42) {
+            overrideMsg = 'VIX em território de pânico (' + d.vix.toFixed(1) + ') — stress de curto prazo elevado, monitorizar de perto.';
         }
 
         const gaugeColor = score <= 35 ? 'var(--green)' : score <= 65 ? 'var(--yellow)' : 'var(--red)';
@@ -624,7 +645,11 @@
             <div class="advice-card ${advClass}">
                 <div class="advice-title">Recomendações Contrarian</div>
                 <ul class="advice-list">${advice.map(a=>`<li>${a}</li>`).join('')}</ul>
-            </div>`;
+            </div>
+            ${overrideMsg ? `<div class="advice-card" style="background:var(--yellow-dim);border-left:2px solid var(--yellow);color:var(--yellow);margin-top:8px;">
+                <div class="advice-title">Sinal de Sentimento</div>
+                <div style="font-size:0.85em;color:var(--text);line-height:1.5;">${overrideMsg}</div>
+            </div>` : ''}`;
 
         // Hunter card
         let hColor, hBg, hLabel, hText;

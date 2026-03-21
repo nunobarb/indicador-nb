@@ -70,8 +70,8 @@ def get_vix():
         vix = float(obs[0]['value'])
         result = {
             'value': round(vix, 1),
-            'signal': 'STRONG_BUY' if vix > 35 else 'BUY' if vix > 25 else
-                      'SELL' if vix < 12 else 'CAUTION' if vix < 15 else 'NEUTRAL',
+            'signal': 'STRONG_BUY' if vix > 40 else 'BUY' if vix > 28 else
+                      'SELL' if vix < 13 else 'CAUTION' if vix < 17 else 'NEUTRAL',
             'description': f'VIX: {vix:.1f}'
         }
         set_cached('vix', result)
@@ -133,8 +133,8 @@ def get_shiller_pe():
             cape = float(obs[0]['value'])
         result = {
             'value': round(cape, 1),
-            'signal': 'SELL' if cape > 30 else 'CAUTION' if cape > 25 else
-                      'BUY' if cape < 18 else 'STRONG_BUY' if cape < 15 else 'NEUTRAL',
+            'signal': 'SELL' if cape > 35 else 'CAUTION' if cape > 28 else
+                      'BUY' if cape < 18 else 'STRONG_BUY' if cape < 14 else 'NEUTRAL',
             'description': f'Shiller P/E: {cape:.1f}'
         }
         set_cached('shiller_pe', result)
@@ -166,8 +166,8 @@ def get_buffett_indicator():
         ratio = (market_cap / gdp) * 100
         result = {
             'value': round(ratio, 0),
-            'signal': 'SELL' if ratio > 140 else 'CAUTION' if ratio > 120 else
-                      'BUY' if ratio < 80 else 'STRONG_BUY' if ratio < 60 else 'NEUTRAL',
+            'signal': 'SELL' if ratio > 185 else 'CAUTION' if ratio > 165 else
+                      'BUY' if ratio < 100 else 'STRONG_BUY' if ratio < 80 else 'NEUTRAL',
             'description': f'Market/GDP: {ratio:.0f}%'
         }
         set_cached('buffett', result)
@@ -199,23 +199,50 @@ def get_high_yield_spread():
         return {'value': 4, 'signal': 'NEUTRAL', 'description': 'Dados indisponíveis'}
 
 
+def clamp(v, lo, hi):
+    return max(lo, min(hi, v))
+
+
 def calculate_score(fg, vix, breadth, buffett, cape, hy):
-    scores = {
-        'fear_greed': fg,
-        'vix':        100 - min(100, max(0, ((vix - 10) / 30) * 100)),
-        'buffett':    min(100, max(0, ((buffett - 60) / 80) * 100)),
-        'cape':       min(100, max(0, ((cape - 10) / 25) * 100)),
-        'breadth':    min(100, max(0, 50 + breadth * 2)),
-        'hy_spread':  100 - min(100, max(0, (hy / 10) * 100)),
-    }
+    """
+    Pesos rebalanceados para um indicador de TIMING contrarian.
+    Sentimento + técnico = 65% (dizem QUANDO agir)
+    Valuation = 35% (contexto estrutural — já não é o "velho normal")
+
+    Normalizações actualizadas:
+      VIX:     range 10-55 (histórico relevante)
+      Buffett: range 80-220 (novo normal pós-2010; ~150% é neutro estrutural)
+      CAPE:    range 10-45 (comporta os níveis actuais de ~32-37)
+      MA200:   contínuo ±30% (não binário)
+      HY:      range 1.5-12%
+    """
+    s_fg  = fg
+    s_vix = 100 - clamp(((vix - 10) / 45) * 100, 0, 100)
+    s_buf = clamp(((buffett - 80) / 140) * 100, 0, 100)
+    s_cap = clamp(((cape - 10) / 35) * 100, 0, 100)
+    s_ma  = clamp(50 + (breadth / 30) * 50, 0, 100)
+    s_hy  = 100 - clamp(((hy - 1.5) / 10.5) * 100, 0, 100)
+
     return round(
-        scores['fear_greed'] * 0.30 +
-        scores['vix']        * 0.20 +
-        scores['buffett']    * 0.15 +
-        scores['cape']       * 0.15 +
-        scores['breadth']    * 0.10 +
-        scores['hy_spread']  * 0.10
+        s_fg  * 0.30 +   # Fear & Greed: 30% — sinal de timing primário
+        s_vix * 0.20 +   # VIX:          20% — stress/pânico de mercado
+        s_ma  * 0.15 +   # S&P vs MA200: 15% — posição técnica
+        s_hy  * 0.15 +   # HY Spread:    15% — stress de crédito
+        s_buf * 0.10 +   # Buffett:      10% — contexto valuation
+        s_cap * 0.10     # CAPE:         10% — contexto histórico
     )
+
+
+def calculate_hunter_score(buffett, cape, hy, vix):
+    """Hunter Bust Risk — mede probabilidade de melt-up pré-bust."""
+    h_val  = clamp(
+        (clamp(((cape - 22) / 18) * 100, 0, 100) * 0.5) +
+        (clamp(((buffett - 130) / 80) * 100, 0, 100) * 0.5),
+        0, 100
+    )
+    h_cred = clamp(100 - ((hy - 1.5) / 4) * 100, 0, 100)
+    h_vol  = clamp(100 - ((vix - 10) / 12) * 100, 0, 100)
+    return round(h_val * 0.50 + h_cred * 0.30 + h_vol * 0.20)
 
 
 @app.route('/')
@@ -236,8 +263,12 @@ def get_market_data():
         fg['value'], vix['value'], sp['value'],
         buff['value'], cape['value'], hy['value']
     )
+    hunter = calculate_hunter_score(
+        buff['value'], cape['value'], hy['value'], vix['value']
+    )
     return jsonify({
-        'score':    score,
+        'score':       score,
+        'hunterScore': hunter,
         'fearGreed': fg['value'],
         'vix':      vix['value'],
         'breadth':  sp['value'],
