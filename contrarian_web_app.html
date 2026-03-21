@@ -149,21 +149,21 @@
         }
 
         /* HUNTER */
-        .hunter-card {
+        .bust-card {
             background:var(--surface); border:1px solid var(--border);
             border-radius:12px; padding:14px 16px; margin:10px 0;
         }
-        .hunter-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
-        .hunter-title-row { display:flex; align-items:center; gap:7px; }
-        .hunter-label { font-size:0.82em; font-weight:700; }
-        .hunter-badge {
+        .bust-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+        .bust-title-row { display:flex; align-items:center; gap:7px; }
+        .bust-label { font-size:0.82em; font-weight:700; }
+        .bust-badge {
             font-family:'DM Mono',monospace; font-size:0.68em; font-weight:500;
             padding:3px 9px; border-radius:4px; letter-spacing:0.03em;
         }
-        .hunter-bar-wrap { width:100%; height:3px; background:var(--border2); border-radius:2px; margin-bottom:10px; }
-        .hunter-bar { height:3px; border-radius:2px; transition:width 0.9s cubic-bezier(0.4,0,0.2,1); }
-        .hunter-text  { font-size:0.82em; color:var(--muted); line-height:1.55; }
-        .hunter-quote { margin-top:8px; font-size:0.73em; color:var(--muted); font-style:italic; opacity:0.6; }
+        .bust-bar-wrap { width:100%; height:3px; background:var(--border2); border-radius:2px; margin-bottom:10px; }
+        .bust-bar { height:3px; border-radius:2px; transition:width 0.9s cubic-bezier(0.4,0,0.2,1); }
+        .bust-text  { font-size:0.82em; color:var(--muted); line-height:1.55; }
+        .bust-quote { margin-top:8px; font-size:0.73em; color:var(--muted); font-style:italic; opacity:0.6; }
 
         /* QUOTE */
         .quote-card {
@@ -379,7 +379,7 @@
         </div>
 
         <div id="adviceSection"></div>
-        <div class="hunter-card" id="hunterCard"></div>
+        <div class="bust-card" id="bustCard"></div>
         <div class="quote-card" id="quote"></div>
 
         <div class="section-title">Indicadores</div>
@@ -488,7 +488,7 @@
                 High Yield Spread
             </div>
             <div class="msec-sub">Peso: 15% · Fonte: FRED / ICE BofA · Range: 1.5–12%</div>
-            <p>Prémio de risco exigido para emprestar a empresas de menor qualidade. Spread muito baixo sinaliza complacência de crédito — um dos indicadores-chave do cenário Hunter.</p>
+            <p>Prémio de risco exigido para emprestar a empresas de menor qualidade. Spread muito baixo sinaliza complacência de crédito — um dos indicadores-chave do cenário Bust.</p>
         </div>
         <div class="msec" style="border-left:3px solid var(--accent);">
             <div class="msec-title" style="color:var(--accent);">Ponderação Final</div>
@@ -505,10 +505,10 @@
         <div class="msec" style="border-left:3px solid var(--red);">
             <div class="msec-title" style="color:var(--red);">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                Hunter Bust Risk (indicador separado)
+                Risco de Bear Market Secular
             </div>
             <p>Mede a probabilidade de estarmos no final de um melt-up antes de um bust severo. Combina overvaluation extrema (CAPE + Buffett), complacência de crédito (HY Spread baixo) e volatilidade suprimida (VIX baixo).</p>
-            <p style="margin-top:7px; font-style:italic; font-size:0.88em;">"O melt-up vai ser épico. O bust vai ser brutal." — David Hunter</p>
+            <p style="margin-top:7px; font-style:italic; font-size:0.88em;">"Mercados sobem pela escada, descem pelo elevador." — investidores contrarian</p>
         </div>
     </div>
 </div>
@@ -590,11 +590,20 @@
             s_cap * 0.10     // CAPE: contexto histórico
         );
 
-        // Hunter Bust Risk
-        const h_val  = clamp((clamp(((d.cape-22)/18)*100,0,100)*0.5)+(clamp(((d.buffett-130)/80)*100,0,100)*0.5),0,100);
-        const h_cred = clamp(100 - ((d.hySpread-1.5)/4)*100, 0, 100);
-        const h_vol  = clamp(100 - ((d.vix-10)/12)*100, 0, 100);
-        const hScore = Math.round(h_val*0.50 + h_cred*0.30 + h_vol*0.20);
+        // Risco de Bear Market — framework real: bust = euforia + complacência simultâneas
+        // Durante pânico (F&G baixo, VIX alto) score deve ser BAIXO = ainda no melt-up
+        const h_euphoria  = d.fearGreed > 50 ? clamp(((d.fearGreed - 50) / 50) * 100, 0, 100) : 0;
+        const h_vix_supp  = d.vix < 25      ? clamp(100 - ((d.vix - 10) / 15) * 100, 0, 100) : 0;
+        const h_credit    = d.hySpread < 4.0 ? clamp(100 - ((d.hySpread - 1.5) / 2.5) * 100, 0, 100) : 0;
+        const h_valuation = (d.cape > 32 && d.buffett > 160)
+            ? clamp(((d.cape - 32) / 10) * 50 + ((d.buffett - 160) / 40) * 50, 0, 100)
+            : 0;
+        const hScore = Math.round(
+            h_euphoria  * 0.35 +
+            h_vix_supp  * 0.30 +
+            h_credit    * 0.20 +
+            h_valuation * 0.15
+        );
 
         // Score UI
         let badgeClass, badgeText, advClass, message, advice;
@@ -651,24 +660,33 @@
                 <div style="font-size:0.85em;color:var(--text);line-height:1.5;">${overrideMsg}</div>
             </div>` : ''}`;
 
-        // Hunter card
+        // Bust card
         let hColor, hBg, hLabel, hText;
-        if (hScore <= 30)      { hColor='var(--green)';  hBg='var(--green-dim)';  hLabel='Baixo';    hText='Sem sinais do padrão pré-bust. Valuations razoáveis e/ou spreads saudáveis.'; }
-        else if (hScore <= 55) { hColor='var(--yellow)'; hBg='var(--yellow-dim)'; hLabel='Moderado'; hText='Algumas condições do cenário Hunter presentes. Vigiar CAPE, Buffett e spreads.'; }
-        else if (hScore <= 75) { hColor='var(--orange)'; hBg='var(--orange-dim)'; hLabel='Elevado';  hText='Mercado em zona melt-up: overvaluation + complacência de crédito. Bust risk real.'; }
-        else                   { hColor='var(--red)';    hBg='var(--red-dim)';    hLabel='Crítico';  hText='Máximo bust risk: CAPE/Buffett extremos + spreads comprimidos + VIX suprimido.'; }
+        if (hScore <= 20) {
+            hColor='var(--green)'; hBg='var(--green-dim)'; hLabel='Fase de acumulação';
+            hText='Sem condições de bust. Sentimento negativo ou VIX elevado — Sem condições de bear market secular. Mantém posição.';
+        } else if (hScore <= 45) {
+            hColor='var(--yellow)'; hBg='var(--yellow-dim)'; hLabel='Risco moderado';
+            hText='Euforia e complacência a crescer. Euforia e complacência a crescer — monitorizar F&G, VIX e spreads de crédito.';
+        } else if (hScore <= 70) {
+            hColor='var(--orange)'; hBg='var(--orange-dim)'; hLabel='Risco elevado';
+            hText='Euforia + VIX suprimido + spreads colados. Começar a reduzir exposição gradualmente.';
+        } else {
+            hColor='var(--red)'; hBg='var(--red-dim)'; hLabel='Bear market iminente';
+            hText='Euforia extrema + VIX suprimido + crédito complacente. Condições de bear market secular activas. Protege o capital.';
+        }
 
-        document.getElementById('hunterCard').innerHTML = `
-            <div class="hunter-header">
-                <div class="hunter-title-row">
+        document.getElementById('bustCard').innerHTML = `
+            <div class="bust-header">
+                <div class="bust-title-row">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="${hColor}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                    <span class="hunter-label">Hunter Bust Risk</span>
+                    <span class="bust-label">Risco de Bear Market</span>
                 </div>
-                <span class="hunter-badge" style="background:${hBg};color:${hColor};">${hLabel} · ${hScore}/100</span>
+                <span class="bust-badge" style="background:${hBg};color:${hColor};">${hLabel} · ${hScore}/100</span>
             </div>
-            <div class="hunter-bar-wrap"><div class="hunter-bar" style="width:${hScore}%;background:${hColor};"></div></div>
-            <div class="hunter-text">${hText}</div>
-            <div class="hunter-quote">"O melt-up vai ser épico. O bust vai ser brutal." — David Hunter</div>`;
+            <div class="bust-bar-wrap"><div class="bust-bar" style="width:${hScore}%;background:${hColor};"></div></div>
+            <div class="bust-text">${hText}</div>
+            <div class="bust-quote">"Mercados sobem pela escada, descem pelo elevador." — investidores contrarian</div>`;
 
         document.getElementById('quote').textContent = quotes[Math.floor(Math.random()*quotes.length)];
 
@@ -678,7 +696,7 @@
               desc: d.fearGreed<25?'Medo extremo':d.fearGreed>75?'Ganância extrema':'Sentimento neutro' },
             { key:'vix', name:'VIX',              value:d.vix.toFixed(1),
               signal: d.vix>40?'STRONG_BUY':d.vix>28?'BUY':d.vix<13?'SELL':d.vix<17?'CAUTION':'NEUTRAL',
-              desc: d.vix>35?'Pânico — stress máximo':d.vix<14?'Complacência (pré-Hunter)':'Normal' },
+              desc: d.vix>35?'Pânico — stress máximo':d.vix<14?'Complacência (pré-Bust)':'Normal' },
             { key:'buffett', name:'Buffett Indicator', value:d.buffett.toFixed(0)+'%',
               signal: d.buffett>185?'SELL':d.buffett>165?'CAUTION':d.buffett<100?'BUY':d.buffett<80?'STRONG_BUY':'NEUTRAL',
               desc: d.buffett>180?'Bolha extrema':d.buffett>150?'Acima do normal estrutural':d.buffett<100?'Barato':'Razoável' },
@@ -690,7 +708,7 @@
               desc: d.breadth<-15?'Sobrevenda extrema':d.breadth>15?'Sobrecomprado':'Próximo da tendência' },
             { key:'hy', name:'HY Spread',         value:d.hySpread.toFixed(2)+'%',
               signal: d.hySpread>8?'STRONG_BUY':d.hySpread>5?'BUY':d.hySpread<2.5?'SELL':d.hySpread<3.5?'CAUTION':'NEUTRAL',
-              desc: d.hySpread>8?'Stress de crédito severo':d.hySpread<3?'Complacência extrema (Hunter)':'Normal' }
+              desc: d.hySpread>8?'Stress de crédito severo':d.hySpread<3?'Complacência extrema (Bust)':'Normal' }
         ];
 
         document.getElementById('indicatorsGrid').innerHTML = indicators.map(ind => `
@@ -785,12 +803,12 @@
             document.getElementById('alertEmail').value       = cfg.email_to || '';
             document.getElementById('buyThreshold').value     = cfg.buy_threshold;
             document.getElementById('sellThreshold').value    = cfg.sell_threshold;
-            document.getElementById('hunterThreshold').value  = cfg.hunter_threshold;
+            document.getElementById('bustThreshold').value  = cfg.bust_threshold;
             document.getElementById('alertInterval').value    = cfg.check_interval;
             // sync slider visuals
-            ['buyThreshold','sellThreshold','hunterThreshold'].forEach(id => {
+            ['buyThreshold','sellThreshold','bustThreshold'].forEach(id => {
                 const el = document.getElementById(id);
-                const offLabel = id === 'hunterThreshold' ? 'OFF' : '--';
+                const offLabel = id === 'bustThreshold' ? 'OFF' : '--';
                 syncSlider(el, id.replace('Threshold','Val'), offLabel);
             });
             updateAlertDot();
@@ -801,7 +819,7 @@
             const parts = [];
             if (st.buy)    parts.push('Compra: ' + new Date(st.buy).toLocaleString('pt-PT'));
             if (st.sell)   parts.push('Venda: '  + new Date(st.sell).toLocaleString('pt-PT'));
-            if (st.hunter) parts.push('Hunter: ' + new Date(st.hunter).toLocaleString('pt-PT'));
+            if (st.bust) parts.push('Bust: ' + new Date(st.bust).toLocaleString('pt-PT'));
             document.getElementById('alertLastSent').textContent =
                 parts.length ? 'Último envio — ' + parts.join(' · ') : '';
         } catch(e) {
@@ -822,7 +840,7 @@
                     email_to:         document.getElementById('alertEmail').value.trim(),
                     buy_threshold:    parseInt(document.getElementById('buyThreshold').value),
                     sell_threshold:   parseInt(document.getElementById('sellThreshold').value),
-                    hunter_threshold: parseInt(document.getElementById('hunterThreshold').value),
+                    bust_threshold: parseInt(document.getElementById('bustThreshold').value),
                     check_interval:   parseInt(document.getElementById('alertInterval').value),
                 })
             });
@@ -916,13 +934,13 @@
             </div>
             <div class="threshold-row" style="margin-bottom:0;">
                 <div class="threshold-header">
-                    <span class="threshold-name" style="color:var(--orange);">Hunter Bust Risk</span>
-                    <span class="threshold-value" id="hunterVal" style="color:var(--orange);">75</span>
+                    <span class="threshold-name" style="color:var(--orange);">Risco de Bear Market</span>
+                    <span class="threshold-value" id="bustVal" style="color:var(--orange);">75</span>
                 </div>
-                <input type="range" id="hunterThreshold" min="0" max="95" value="75"
-                    oninput="syncSlider(this,'hunterVal','OFF')"
+                <input type="range" id="bustThreshold" min="0" max="95" value="75"
+                    oninput="syncSlider(this,'bustVal','OFF')"
                     style="--pct:79%">
-                <div style="font-size:0.73em;color:var(--muted);margin-top:6px;">0 = desactivado &nbsp;|&nbsp; Notifica quando Hunter &ge; este valor</div>
+                <div style="font-size:0.73em;color:var(--muted);margin-top:6px;">0 = desactivado &nbsp;|&nbsp; Notifica quando Bust &ge; este valor</div>
             </div>
         </div>
 

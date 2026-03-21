@@ -35,7 +35,7 @@ def load_state():
         with open(STATE_FILE) as f:
             return json.load(f)
     except:
-        return {"last_buy": None, "last_sell": None, "last_hunter": None}
+        return {"last_buy": None, "last_sell": None, "last_bust": None}
 
 def save_state(state):
     with open(STATE_FILE, "w") as f:
@@ -61,17 +61,20 @@ def calculate_scores(d):
 
     score = round(s_fg*0.20 + s_vix*0.15 + s_buf*0.20 + s_cap*0.20 + s_ma*0.10 + s_hy*0.15)
 
-    h_val  = clamp((clamp(((d["cape"]-22)/18)*100,0,100)*0.5) + (clamp(((d["buffett"]-130)/80)*100,0,100)*0.5), 0, 100)
-    h_cred = clamp(100 - ((d["hySpread"]-1.5)/4)*100, 0, 100)
-    h_vol  = clamp(100 - ((d["vix"]-10)/12)*100, 0, 100)
-    hunter = round(h_val*0.50 + h_cred*0.30 + h_vol*0.20)
+    fg = d.get("fearGreed", 50)
+    vix = d["vix"]; hy = d["hySpread"]; cape = d["cape"]; buffett = d["buffett"]
+    h_euphoria  = clamp(((fg - 50) / 50) * 100, 0, 100) if fg > 50 else 0
+    h_vix_supp  = clamp(100 - ((vix - 10) / 15) * 100, 0, 100) if vix < 25 else 0
+    h_credit    = clamp(100 - ((hy - 1.5) / 2.5) * 100, 0, 100) if hy < 4.0 else 0
+    h_valuation = clamp(((cape-32)/10)*50 + ((buffett-160)/40)*50, 0, 100) if (cape > 32 and buffett > 160) else 0
+    bust = round(h_euphoria*0.35 + h_vix_supp*0.30 + h_credit*0.20 + h_valuation*0.15)
 
-    return score, hunter
+    return score, bust
 
 # ── EMAIL ─────────────────────────────────────────────────────────────────────
-def send_email(subject, score, hunter, alert_type, data):
+def send_email(subject, score, bust, alert_type, data):
     color  = "#00c896" if alert_type == "buy" else "#ff4757" if alert_type == "sell" else "#ff7043"
-    label  = {"buy": "OPORTUNIDADE DE COMPRA", "sell": "SINAL DE VENDA / PROTEGER", "hunter": "HUNTER BUST RISK ELEVADO"}[alert_type]
+    label  = {"buy": "OPORTUNIDADE DE COMPRA", "sell": "SINAL DE VENDA / PROTEGER", "bust": "RISCO DE BEAR MARKET ELEVADO"}[alert_type]
     now    = datetime.now().strftime("%d/%m/%Y %H:%M")
 
     rows = "".join(
@@ -98,8 +101,8 @@ def send_email(subject, score, hunter, alert_type, data):
     <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#5c6480;margin-bottom:10px;">Indicadores</div>
     <table style="width:100%;border-collapse:collapse;">{rows}</table>
     <div style="margin-top:16px;background:#0d0f14;border-radius:8px;padding:14px;display:flex;justify-content:space-between;align-items:center;">
-      <div style="font-size:12px;color:#5c6480;">Hunter Bust Risk</div>
-      <div style="font-family:monospace;font-size:22px;color:#ff7043;font-weight:500;">{hunter}<span style="font-size:.45em;color:#5c6480;">/100</span></div>
+      <div style="font-size:12px;color:#5c6480;">Risco de Bear Market</div>
+      <div style="font-family:monospace;font-size:22px;color:#ff7043;font-weight:500;">{bust}<span style="font-size:.45em;color:#5c6480;">/100</span></div>
     </div>
     <div style="margin-top:20px;text-align:center;">
       <a href="https://indicador-nb.onrender.com" style="background:#f0b429;color:#0d0f14;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:700;font-size:13px;">Abrir Indicador NB</a>
@@ -135,19 +138,19 @@ def main():
         print(f"[alerter] Erro ao obter dados: {e}")
         return
 
-    score, hunter = calculate_scores(data)
+    score, bust = calculate_scores(data)
     state = load_state()
     now_iso = datetime.utcnow().isoformat()
     sent_any = False
 
-    print(f"[alerter] Score={score}  Hunter={hunter}  "
-          f"Buy<={BUY_THRESHOLD}  Sell>={SELL_THRESHOLD}  Hunter>={HUNTER_THRESHOLD}")
+    print(f"[alerter] Score={score}  Bust={bust}  "
+          f"Buy<={BUY_THRESHOLD}  Sell>={SELL_THRESHOLD}  Bust>={HUNTER_THRESHOLD}")
 
     # Alerta de compra
     if score <= BUY_THRESHOLD and hours_since(state["last_buy"]) >= 6:
         try:
             send_email(f"[Indicador NB] Score {score}/100 — Oportunidade de Compra",
-                       score, hunter, "buy", data)
+                       score, bust, "buy", data)
             state["last_buy"] = now_iso
             sent_any = True
         except Exception as e:
@@ -157,21 +160,21 @@ def main():
     if score >= SELL_THRESHOLD and hours_since(state["last_sell"]) >= 6:
         try:
             send_email(f"[Indicador NB] Score {score}/100 — Reduz Exposição",
-                       score, hunter, "sell", data)
+                       score, bust, "sell", data)
             state["last_sell"] = now_iso
             sent_any = True
         except Exception as e:
             print(f"[alerter] Falha ao enviar email de venda: {e}")
 
-    # Alerta Hunter
-    if HUNTER_THRESHOLD > 0 and hunter >= HUNTER_THRESHOLD and hours_since(state["last_hunter"]) >= 6:
+    # Alerta Bust
+    if HUNTER_THRESHOLD > 0 and bust >= HUNTER_THRESHOLD and hours_since(state["last_bust"]) >= 6:
         try:
-            send_email(f"[Indicador NB] Hunter Bust Risk {hunter}/100 — Risco Elevado",
-                       score, hunter, "hunter", data)
-            state["last_hunter"] = now_iso
+            send_email(f"[Indicador NB] Risco de Bear Market {bust}/100 — Risco Elevado",
+                       score, bust, "bust", data)
+            state["last_bust"] = now_iso
             sent_any = True
         except Exception as e:
-            print(f"[alerter] Falha ao enviar email Hunter: {e}")
+            print(f"[alerter] Falha ao enviar email Bust: {e}")
 
     if not sent_any:
         print("[alerter] Sem alertas para disparar.")

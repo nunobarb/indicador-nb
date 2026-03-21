@@ -233,16 +233,43 @@ def calculate_score(fg, vix, breadth, buffett, cape, hy):
     )
 
 
-def calculate_hunter_score(buffett, cape, hy, vix):
-    """Hunter Bust Risk — mede probabilidade de melt-up pré-bust."""
-    h_val  = clamp(
-        (clamp(((cape - 22) / 18) * 100, 0, 100) * 0.5) +
-        (clamp(((buffett - 130) / 80) * 100, 0, 100) * 0.5),
-        0, 100
+def calculate_bust_risk_score(buffett, cape, hy, vix, fg=50):
+    """
+    Risco de Bear Market — framework baseado no modelo real de David Bust.
+
+    Bust ocorre quando há EUFORIA + COMPLACÊNCIA simultâneas, NÃO quando
+    há overvaluation isolada. Durante fases de pânico (F&G baixo, VIX alto)
+    o score deve ser BAIXO — ainda estamos no melt-up, não no bust.
+
+    Componentes:
+      35% — Euforia de sentimento (F&G > 50 activado)
+      30% — VIX suprimido (< 25 activado)
+      20% — Complacência de crédito (HY < 4% activado)
+      15% — Valuation extremo (CAPE>32 E Buffett>160, contexto)
+    """
+    # Euforia: só conta quando F&G > 50
+    h_euphoria = clamp(((fg - 50) / 50) * 100, 0, 100) if fg > 50 else 0
+
+    # VIX suprimido: só conta quando VIX < 25
+    h_vix = clamp(100 - ((vix - 10) / 15) * 100, 0, 100) if vix < 25 else 0
+
+    # Spreads colados: só conta quando HY < 4%
+    h_credit = clamp(100 - ((hy - 1.5) / 2.5) * 100, 0, 100) if hy < 4.0 else 0
+
+    # Valuation extremo: só activa se AMBOS elevados
+    h_valuation = 0
+    if cape > 32 and buffett > 160:
+        h_valuation = clamp(
+            ((cape - 32) / 10) * 50 + ((buffett - 160) / 40) * 50,
+            0, 100
+        )
+
+    return round(
+        h_euphoria  * 0.35 +
+        h_vix       * 0.30 +
+        h_credit    * 0.20 +
+        h_valuation * 0.15
     )
-    h_cred = clamp(100 - ((hy - 1.5) / 4) * 100, 0, 100)
-    h_vol  = clamp(100 - ((vix - 10) / 12) * 100, 0, 100)
-    return round(h_val * 0.50 + h_cred * 0.30 + h_vol * 0.20)
 
 
 @app.route('/')
@@ -263,12 +290,12 @@ def get_market_data():
         fg['value'], vix['value'], sp['value'],
         buff['value'], cape['value'], hy['value']
     )
-    hunter = calculate_hunter_score(
-        buff['value'], cape['value'], hy['value'], vix['value']
+    bust = calculate_bust_risk_score(
+        buff['value'], cape['value'], hy['value'], vix['value'], fg['value']
     )
     return jsonify({
         'score':       score,
-        'hunterScore': hunter,
+        'bustScore': bust,
         'fearGreed': fg['value'],
         'vix':      vix['value'],
         'breadth':  sp['value'],
