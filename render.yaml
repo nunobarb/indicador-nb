@@ -3,11 +3,9 @@ services:
     name: indicador-nb
     runtime: python
     buildCommand: pip install -r requirements_backend.txt
-    startCommand: gunicorn backend_api:app
+    startCommand: gunicorn backend_api:app --timeout 120
     autoDeploy: true
     envVars:
-      - key: ALPHA_VANTAGE_KEY
-        sync: false
       - key: FRED_KEY
         sync: false
       - key: ALERT_SMTP_HOST
@@ -26,9 +24,9 @@ services:
         value: "70"
       - key: ALERT_HUNTER_THRESHOLD
         value: "75"
-      - key: ALERT_API_URL
-        value: "https://indicador-nb.onrender.com/api/data"
 
+  # Cron = trigger simples + keep-alive (evita cold starts no free tier).
+  # Toda a lógica de score e envio de email vive agora no web service.
   - type: cron
     name: indicador-nb-alerter
     runtime: python
@@ -36,21 +34,5 @@ services:
     buildCommand: pip install requests
     startCommand: python alerter.py
     envVars:
-      - key: ALERT_SMTP_HOST
-        sync: false
-      - key: ALERT_SMTP_PORT
-        sync: false
-      - key: ALERT_SMTP_USER
-        sync: false
-      - key: ALERT_SMTP_PASS
-        sync: false
-      - key: ALERT_EMAIL_TO
-        sync: false
-      - key: ALERT_BUY_THRESHOLD
-        value: "30"
-      - key: ALERT_SELL_THRESHOLD
-        value: "70"
-      - key: ALERT_HUNTER_THRESHOLD
-        value: "75"
       - key: ALERT_API_URL
         value: "https://indicador-nb.onrender.com/api/data"

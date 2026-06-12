@@ -522,56 +522,56 @@
         document.getElementById('content').style.display = 'none';
         try {
             const r = await fetch('/api/data');
-            displayResults(await r.json());
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            const d = await r.json();
+            localStorage.setItem('contrarian_last_data', JSON.stringify(d));
+            displayResults(d);
         } catch {
-            // Fallback com últimos valores conhecidos do mercado (Março 2026)
-            displayResults({
-                fearGreed: 12,
-                vix:       24.1,
-                buffett:   185,
-                cape:      31.0,
-                breadth:   -1.7,
-                hySpread:  3.27
-            });
+            // Fallback OFFLINE: usar os últimos dados REAIS guardados
+            // localmente, devidamente assinalados — nunca valores inventados.
+            const saved = localStorage.getItem('contrarian_last_data');
+            if (saved) {
+                const d = JSON.parse(saved);
+                d._stale = true;
+                displayResults(d);
+            } else {
+                document.getElementById('loading').innerHTML =
+                    '<div style="color:var(--muted2);text-align:center;padding:24px;">' +
+                    'Sem ligação à API e sem dados guardados.<br>' +
+                    'Tenta novamente dentro de momentos.</div>';
+            }
         }
     }
 
     const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 
-    function displayResults(d) {
-        // Normalizações corrigidas
+    // Fórmulas locais — usadas APENAS como fallback offline.
+    // A fonte de verdade é o backend (/api/data devolve score e bustScore).
+    function localScore(d) {
         const s_fg  = d.fearGreed;
         const s_vix = 100 - clamp(((d.vix - 10)      / 45) * 100, 0, 100);
         const s_buf = clamp(((d.buffett - 80)         / 140) * 100, 0, 100);
         const s_cap = clamp(((d.cape - 10)            / 35)  * 100, 0, 100);
         const s_ma  = clamp(50 + (d.breadth / 30) * 50,            0, 100);
         const s_hy  = 100 - clamp(((d.hySpread - 1.5) / 10.5) * 100, 0, 100);
-
-        // PESOS: sentimento+técnico=65% (timing), valuation=35% (contexto)
         // F&G 30% | VIX 20% | MA200 15% | HY 15% | Buffett 10% | CAPE 10%
-        const score = Math.round(
-            s_fg  * 0.30 +   // F&G: timing primário
-            s_vix * 0.20 +   // VIX: pânico/stress
-            s_ma  * 0.15 +   // S&P vs MA200: posição técnica
-            s_hy  * 0.15 +   // HY Spread: crédito
-            s_buf * 0.10 +   // Buffett: contexto valuation
-            s_cap * 0.10     // CAPE: contexto histórico
-        );
+        return Math.round(s_fg*0.30 + s_vix*0.20 + s_ma*0.15 + s_hy*0.15 + s_buf*0.10 + s_cap*0.10);
+    }
 
-        // Risco de Bear Market — framework real: bust = euforia + complacência simultâneas
-        // Durante pânico (F&G baixo, VIX alto) score deve ser BAIXO = ainda no melt-up
+    function localBust(d) {
         const h_euphoria  = d.fearGreed > 50 ? clamp(((d.fearGreed - 50) / 50) * 100, 0, 100) : 0;
         const h_vix_supp  = d.vix < 25      ? clamp(100 - ((d.vix - 10) / 15) * 100, 0, 100) : 0;
         const h_credit    = d.hySpread < 4.0 ? clamp(100 - ((d.hySpread - 1.5) / 2.5) * 100, 0, 100) : 0;
         const h_valuation = (d.cape > 32 && d.buffett > 160)
             ? clamp(((d.cape - 32) / 10) * 50 + ((d.buffett - 160) / 40) * 50, 0, 100)
             : 0;
-        const hScore = Math.round(
-            h_euphoria  * 0.35 +
-            h_vix_supp  * 0.30 +
-            h_credit    * 0.20 +
-            h_valuation * 0.15
-        );
+        return Math.round(h_euphoria*0.35 + h_vix_supp*0.30 + h_credit*0.20 + h_valuation*0.15);
+    }
+
+    function displayResults(d) {
+        // Score da API (fonte de verdade); cálculo local só se ausente
+        const score  = (typeof d.score     === 'number') ? d.score     : localScore(d);
+        const hScore = (typeof d.bustScore === 'number') ? d.bustScore : localBust(d);
 
         // Score UI
         let badgeClass, badgeText, advClass, message, advice;
@@ -642,6 +642,10 @@
         document.getElementById('scoreNumber').innerHTML = `${score}<span class="denom">/100</span>`;
         const badge = document.getElementById('scoreBadge');
         badge.className = `score-badge ${badgeClass}`; badge.textContent = badgeText;
+        if (d._stale) {
+            const ts = d.timestamp ? new Date(d.timestamp).toLocaleString('pt-PT') : 'data desconhecida';
+            message = '\u26A0 Sem liga\u00E7\u00E3o \u2014 \u00FAltimos dados guardados (' + ts + '). ' + message;
+        }
         document.getElementById('scoreMessage').textContent = message;
         document.getElementById('gaugeFill').style.cssText = `width:${score}%;background:${gaugeColor};`;
         document.getElementById('gaugeDot').style.left = `${score}%`;
