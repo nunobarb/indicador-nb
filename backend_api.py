@@ -290,7 +290,11 @@ def calculate_score(fg, vix, breadth, buffett, cape, hy):
     """
     s_fg  = fg
     s_vix = 100 - clamp(((vix - 10) / 45) * 100, 0, 100)
-    s_buf = clamp(((buffett - 80) / 140) * 100, 0, 100)
+    # Range alargado de 80-220% para 80-260%: o antigo tecto (220%) já foi
+    # ultrapassado pelo valor real (~236%, perto do recorde histórico de
+    # 237,4%), o que saturava este componente a 100 e lhe tirava toda a
+    # resolução exactamente na zona mais crítica (perto de máximos).
+    s_buf = clamp(((buffett - 80) / 180) * 100, 0, 100)
     s_cap = clamp(((cape - 10) / 35) * 100, 0, 100)
     s_ma  = clamp(50 + (breadth / 30) * 50, 0, 100)
     s_hy  = 100 - clamp(((hy - 1.5) / 10.5) * 100, 0, 100)

@@ -18,12 +18,14 @@ services:
         sync: false
       - key: ALERT_EMAIL_TO
         sync: false
+      # Alinhados com as zonas visuais do contrarian_web_app.html:
+      # score <=42 = "Compra" · score >=78 = "Vender" · bust score >70 = zona de risco alto
       - key: ALERT_BUY_THRESHOLD
-        value: "30"
+        value: "42"
       - key: ALERT_SELL_THRESHOLD
-        value: "70"
+        value: "78"
       - key: ALERT_HUNTER_THRESHOLD
-        value: "75"
+        value: "70"
 
   # Cron = trigger simples + keep-alive (evita cold starts no free tier).
   # Toda a lógica de score e envio de email vive agora no web service.
