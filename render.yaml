@@ -18,13 +18,13 @@ services:
         sync: false
       - key: ALERT_EMAIL_TO
         sync: false
-      # Alinhados com as zonas visuais do contrarian_web_app.html:
-      # score <=42 = "Compra" · score >=78 = "Vender" · bust score >70 = zona de risco alto
+      # Alinhados com as zonas visuais do contrarian_web_app.html (v3):
+      # score <=45 = "Compra" · score >82 = "Vender" · bust score >=70 = zona de risco alto
       - key: ALERT_BUY_THRESHOLD
-        value: "42"
+        value: "45"
       - key: ALERT_SELL_THRESHOLD
-        value: "78"
-      - key: ALERT_HUNTER_THRESHOLD
+        value: "82"
+      - key: ALERT_BUST_THRESHOLD
         value: "70"
 
   # Cron = trigger simples + keep-alive (evita cold starts no free tier).

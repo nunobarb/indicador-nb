@@ -3,19 +3,16 @@
 Indicador NB - Backend API
 100% automático, sem actualizações manuais.
 
-v2 — correcções:
-  • Fear & Greed: CNN (acções) como fonte primária; alternative.me (crypto)
-    apenas como proxy de último recurso, devidamente assinalado.
-  • Buffett Indicator: usa BOGZ1LM893064105Q (corporate equities, todos os
-    sectores, em milhões USD) ÷ GDP — a série DDDM01USA156NWDB era o próprio
-    ratio (anual, descontinuada em 2020) e estava a ser dividida duas vezes.
-  • Fetch paralelo dos 6 indicadores (ThreadPoolExecutor) — cold start ~6x
-    mais rápido.
-  • Lógica de alertas movida para o web service (/api/check-alerts) — o
-    estado anti-spam vive na memória do processo de longa duração, em vez
-    de /tmp num container de cron efémero.
-  • Score calculado apenas aqui (single source of truth); frontend e
-    alerter consomem o valor da API.
+v3 — recalibração timing vs valuation + clarificação Buffett:
+  • Pesos: F&G 32% / VIX 20% / MA200 15% / HY 15% / Buffett 9% / CAPE 9%.
+    Valuation deixa de dominar o score enquanto o sentimento não estiver
+    em euforia real (melhor alinhamento com ciclos longos / targets elevados).
+  • Buffett: clarificado que a série Z.1 (BOGZ1LM893064105Q) é alargada
+    (inclui non-public) e fica ~30-40% acima do clássico público (~240%).
+    Thresholds de sinal e normalização do score actualizados em conformidade.
+  • Thresholds de alerta e UI: buy ≤45 · cautela até 82 · sell >82.
+  • (v2) Fear & Greed CNN primário; fetch paralelo; alertas no web service;
+    single source of truth para o score.
 """
 
 from flask import Flask, jsonify, send_file
@@ -216,12 +213,18 @@ def get_shiller_pe():
 
 def get_buffett_indicator():
     """
-    Buffett Indicator = Market Cap total / GDP nominal.
+    Buffett Indicator (versão Z.1 alargada) = Market Cap total / GDP nominal.
 
     Market cap: BOGZ1LM893064105Q — "All Sectors; Corporate Equities;
     Liability, Level" (Z.1 Flow of Funds, trimestral, em MILHÕES de USD).
+    Esta série inclui equities de empresas não cotadas / privately held,
+    por isso fica consistentemente ~30-40% acima do Buffett clássico
+    (Wilshire 5000 / GDP ≈ 240% em meados de 2026).
+
     Fallback: NCBEILQ027S (só nonfinancial — subestima; assinalado).
     GDP: série GDP (trimestral, em MILES DE MILHÕES de USD).
+
+    Os thresholds de sinal foram calibrados para esta série alargada.
     """
     cached = get_cached('buffett')
     if cached: return cached
@@ -237,22 +240,23 @@ def get_buffett_indicator():
         gdp_bn = fred_observations('GDP', limit=5)[0]
         ratio = (market_cap_mm / 1000.0) / gdp_bn * 100  # milhões→mil milhões
 
-        if not (30 <= ratio <= 400):  # sanity check contra erro de unidades
+        if not (30 <= ratio <= 450):  # sanity check contra erro de unidades
             raise ValueError(f"Ratio implausível: {ratio:.0f}%")
 
+        # Thresholds calibrados para a série Z.1 (mais alta que o clássico público)
         result = {
             'value': round(ratio, 0),
-            'signal': 'SELL' if ratio > 185 else 'CAUTION' if ratio > 165 else
-                      'STRONG_BUY' if ratio < 80 else 'BUY' if ratio < 100 else 'NEUTRAL',
-            'description': f'Market/GDP: {ratio:.0f}%{suffix}'
+            'signal': 'SELL' if ratio > 280 else 'CAUTION' if ratio > 230 else
+                      'STRONG_BUY' if ratio < 100 else 'BUY' if ratio < 140 else 'NEUTRAL',
+            'description': f'Market/GDP (Z.1): {ratio:.0f}%{suffix}'
         }
         set_cached('buffett', result)
-        print(f"Buffett Indicator: {ratio:.0f}%{suffix}")
+        print(f"Buffett Indicator (Z.1): {ratio:.0f}%{suffix}")
         return result
     except Exception as e:
         print(f"Erro Buffett: {e}")
         stale = get_cached('buffett', allow_stale=True)
-        return stale or {'value': 150, 'signal': 'NEUTRAL', 'description': 'Dados indisponíveis'}
+        return stale or {'value': 200, 'signal': 'CAUTION', 'description': 'Dados indisponíveis'}
 
 
 def get_high_yield_spread():
@@ -284,28 +288,35 @@ def clamp(v, lo, hi):
 
 def calculate_score(fg, vix, breadth, buffett, cape, hy):
     """
-    Pesos rebalanceados para um indicador de TIMING contrarian.
-    Sentimento + técnico = 65% (dizem QUANDO agir)
-    Valuation = 35% (contexto estrutural)
+    Indicador de TIMING contrarian (v3).
+
+    Filosofia:
+    - Sentimento + stress de mercado (F&G, VIX, HY, MA200) dominam o timing
+      (~80%). Dizem QUANDO a probabilidade de extremo é maior.
+    - Valuation (Buffett Z.1 + CAPE) fica com peso menor (~18%). Serve de
+      contexto estrutural e não deve sozinho forçar "vende já" enquanto o
+      sentimento não estiver em euforia real. Valuations altas podem
+      persistir durante fases finais de bull markets longos.
+
+    Buffett usa a série Z.1 (mais larga que o clássico público ~240%).
+    O range de normalização foi alargado em conformidade.
     """
     s_fg  = fg
     s_vix = 100 - clamp(((vix - 10) / 45) * 100, 0, 100)
-    # Range alargado de 80-220% para 80-260%: o antigo tecto (220%) já foi
-    # ultrapassado pelo valor real (~236%, perto do recorde histórico de
-    # 237,4%), o que saturava este componente a 100 e lhe tirava toda a
-    # resolução exactamente na zona mais crítica (perto de máximos).
-    s_buf = clamp(((buffett - 80) / 180) * 100, 0, 100)
+    # Série Z.1: range prático ~100-340. Saturamos mais tarde para manter
+    # resolução na zona actual (230-330).
+    s_buf = clamp(((buffett - 100) / 220) * 100, 0, 100)
     s_cap = clamp(((cape - 10) / 35) * 100, 0, 100)
     s_ma  = clamp(50 + (breadth / 30) * 50, 0, 100)
     s_hy  = 100 - clamp(((hy - 1.5) / 10.5) * 100, 0, 100)
 
     return round(
-        s_fg  * 0.30 +   # Fear & Greed: 30% — sinal de timing primário
-        s_vix * 0.20 +   # VIX:          20% — stress/pânico de mercado
+        s_fg  * 0.32 +   # Fear & Greed: 32% — timing primário
+        s_vix * 0.20 +   # VIX:          20% — stress/pânico
         s_ma  * 0.15 +   # S&P vs MA200: 15% — posição técnica
         s_hy  * 0.15 +   # HY Spread:    15% — stress de crédito
-        s_buf * 0.10 +   # Buffett:      10% — contexto valuation
-        s_cap * 0.10     # CAPE:         10% — contexto histórico
+        s_buf * 0.09 +   # Buffett Z.1:   9% — contexto valuation
+        s_cap * 0.09     # CAPE:          9% — contexto histórico
     )
 
 
@@ -380,9 +391,9 @@ SMTP_USER = os.getenv("ALERT_SMTP_USER", "")
 SMTP_PASS = os.getenv("ALERT_SMTP_PASS", "")
 EMAIL_TO  = os.getenv("ALERT_EMAIL_TO", "")
 
-BUY_THRESHOLD    = int(os.getenv("ALERT_BUY_THRESHOLD",    "30"))
-SELL_THRESHOLD   = int(os.getenv("ALERT_SELL_THRESHOLD",   "70"))
-HUNTER_THRESHOLD = int(os.getenv("ALERT_HUNTER_THRESHOLD", "75"))
+BUY_THRESHOLD    = int(os.getenv("ALERT_BUY_THRESHOLD",    "45"))
+SELL_THRESHOLD   = int(os.getenv("ALERT_SELL_THRESHOLD",   "82"))
+BUST_THRESHOLD   = int(os.getenv("ALERT_BUST_THRESHOLD",   "70"))
 
 ALERT_COOLDOWN = timedelta(hours=6)
 _alert_state = {"last_buy": None, "last_sell": None, "last_bust": None}
@@ -476,14 +487,14 @@ def check_alerts():
     sent = []
 
     print(f"[alerts] Score={score} Bust={bust} "
-          f"Buy<={BUY_THRESHOLD} Sell>={SELL_THRESHOLD} Bust>={HUNTER_THRESHOLD}")
+          f"Buy<={BUY_THRESHOLD} Sell>={SELL_THRESHOLD} Bust>={BUST_THRESHOLD}")
 
     checks = [
         ('buy',  score <= BUY_THRESHOLD,
          f"[Indicador NB] Score {score}/100 — Oportunidade de Compra"),
         ('sell', score >= SELL_THRESHOLD,
          f"[Indicador NB] Score {score}/100 — Reduz Exposição"),
-        ('bust', HUNTER_THRESHOLD > 0 and bust >= HUNTER_THRESHOLD,
+        ('bust', BUST_THRESHOLD > 0 and bust >= BUST_THRESHOLD,
          f"[Indicador NB] Risco de Bear Market {bust}/100 — Risco Elevado"),
     ]
     for alert_type, condition, subject in checks:

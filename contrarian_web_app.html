@@ -149,7 +149,7 @@
             width:5px; height:1px; background:currentColor; opacity:0.4;
         }
 
-        /* HUNTER */
+        /* BUST / Risco de Bear Market */
         .bust-card {
             background:var(--surface); border:1px solid var(--border);
             border-radius:12px; padding:14px 16px; margin:10px 0;
@@ -414,7 +414,7 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                 Fear &amp; Greed Index
             </div>
-            <div class="msec-sub">Peso: 30% · Fonte: CNN / Alternative.me</div>
+            <div class="msec-sub">Peso: 32% · Fonte: CNN / Alternative.me</div>
             <p>Mede o sentimento do mercado de 0 a 100, agregando 7 sub-indicadores: momentum, força de acções, volatilidade e opções. Em Março 2020 chegou a 12. Quem comprou nessa altura ganhou +80% em 12 meses.</p>
         </div>
         <div class="msec">
@@ -428,17 +428,17 @@
         <div class="msec">
             <div class="msec-title">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-                Buffett Indicator
+                Buffett Indicator (Z.1)
             </div>
-            <div class="msec-sub">Peso: 10% · Fonte: FRED · Range recalibrado: 80–220%</div>
-            <p>Capitalização total da bolsa ÷ PIB dos EUA. Thresholds actualizados para o novo normal pós-2010 — o ratio estrutural subiu com a globalização das receitas e as recompras de acções.</p>
+            <div class="msec-sub">Peso: 9% · Fonte: FRED Z.1 · Range ~100–340%</div>
+            <p>Capitalização total de equities (incluindo não cotadas) ÷ PIB. Série mais larga que o Buffett clássico (público ~240%). Serve de contexto estrutural — valuations altas podem persistir em fases finais de bull markets longos.</p>
         </div>
         <div class="msec">
             <div class="msec-title">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
                 Shiller P/E (CAPE)
             </div>
-            <div class="msec-sub">Peso: 10% · Fonte: Robert Shiller / Yale · Range: 10–45</div>
+            <div class="msec-sub">Peso: 9% · Fonte: Robert Shiller / Yale · Range: 10–45</div>
             <p>Preço do mercado vs. lucros médios dos últimos 10 anos ajustados à inflação. Média histórica: 17. Em 1929 estava em 33, em 2000 chegou a 44, em 2009 caiu a 13.</p>
         </div>
         <div class="msec">
@@ -458,16 +458,16 @@
             <p>Prémio de risco exigido para emprestar a empresas de menor qualidade. Spread muito baixo sinaliza complacência de crédito — um dos indicadores-chave do cenário Bust.</p>
         </div>
         <div class="msec" style="border-left:3px solid var(--accent);">
-            <div class="msec-title" style="color:var(--accent);">Ponderação Final</div>
+            <div class="msec-title" style="color:var(--accent);">Ponderação Final (v3)</div>
             <table class="weight-table">
-                <tr><td>Fear &amp; Greed Index</td><td>30%</td></tr>
+                <tr><td>Fear &amp; Greed Index</td><td>32%</td></tr>
                 <tr><td>VIX</td><td>20%</td></tr>
                 <tr><td>S&amp;P vs MA200</td><td>15%</td></tr>
                 <tr><td>High Yield Spread</td><td>15%</td></tr>
-                <tr><td>Buffett Indicator</td><td>10%</td></tr>
-                <tr><td>Shiller P/E (CAPE)</td><td>10%</td></tr>
+                <tr><td>Buffett Indicator (Z.1)</td><td>9%</td></tr>
+                <tr><td>Shiller P/E (CAPE)</td><td>9%</td></tr>
             </table>
-            <p style="margin-top:9px; font-size:0.76em;">Score 0–42 = zona de compra · Score 62–78 = cautela · Score 78+ = vender</p>
+            <p style="margin-top:9px; font-size:0.76em;">Score ≤45 = compra · ≤68 = neutro · ≤82 = cautela · >82 = vender/proteger</p>
         </div>
         <div class="msec" style="border-left:3px solid var(--red);">
             <div class="msec-title" style="color:var(--red);">
@@ -547,15 +547,16 @@
 
     // Fórmulas locais — usadas APENAS como fallback offline.
     // A fonte de verdade é o backend (/api/data devolve score e bustScore).
+    // Mantidas em sincronia com calculate_score() do backend (v3).
     function localScore(d) {
         const s_fg  = d.fearGreed;
         const s_vix = 100 - clamp(((d.vix - 10)      / 45) * 100, 0, 100);
-        const s_buf = clamp(((d.buffett - 80)         / 140) * 100, 0, 100);
+        const s_buf = clamp(((d.buffett - 100)        / 220) * 100, 0, 100);
         const s_cap = clamp(((d.cape - 10)            / 35)  * 100, 0, 100);
         const s_ma  = clamp(50 + (d.breadth / 30) * 50,            0, 100);
         const s_hy  = 100 - clamp(((d.hySpread - 1.5) / 10.5) * 100, 0, 100);
-        // F&G 30% | VIX 20% | MA200 15% | HY 15% | Buffett 10% | CAPE 10%
-        return Math.round(s_fg*0.30 + s_vix*0.20 + s_ma*0.15 + s_hy*0.15 + s_buf*0.10 + s_cap*0.10);
+        // F&G 32% | VIX 20% | MA200 15% | HY 15% | Buffett 9% | CAPE 9%
+        return Math.round(s_fg*0.32 + s_vix*0.20 + s_ma*0.15 + s_hy*0.15 + s_buf*0.09 + s_cap*0.09);
     }
 
     function localBust(d) {
@@ -573,29 +574,31 @@
         const score  = (typeof d.score     === 'number') ? d.score     : localScore(d);
         const hScore = (typeof d.bustScore === 'number') ? d.bustScore : localBust(d);
 
-        // Score UI
+        // Score UI — thresholds e linguagem recalibrados (v3)
+        // Objectivo: valuations altas sozinhas não disparam "euforia extrema"
+        // enquanto o sentimento (F&G) não estiver também em zona de ganância.
         let badgeClass, badgeText, advClass, message, advice;
-        // Thresholds ajustados: valuations estruturalmente mais altas no pós-2010
-        // means the composite rarely reaches <20 even in panics — buy zone raised to 42
-        if (score <= 22) {
+        if (score <= 25) {
             badgeClass='badge-buy'; badgeText='Compra Agressiva'; advClass='buy';
             message='Pessimismo extremo — momento histórico de entrada';
             advice=['Altura de ser ganancioso quando outros têm medo','Aumenta exposição a acções de qualidade','DCA se ainda incerto'];
-        } else if (score <= 42) {
+        } else if (score <= 45) {
             badgeClass='badge-buy'; badgeText='Boa Oportunidade'; advClass='buy';
             message='Sentimento negativo acima do normal — acumular gradualmente';
             advice=['Acumula posições gradualmente','Procura empresas de qualidade com desconto'];
-        } else if (score <= 62) {
+        } else if (score <= 68) {
             badgeClass='badge-neutral'; badgeText='Neutro'; advClass='neutral';
-            message='Sem sinais claros de extremo';
+            message='Sem sinais claros de extremo de sentimento';
             advice=['Mantém posições actuais','Prepara lista de compras para a próxima correcção'];
-        } else if (score <= 78) {
+        } else if (score <= 82) {
             badgeClass='badge-caution'; badgeText='Cautela'; advClass='caution';
-            message='Euforia acima do normal — reduz exposição progressivamente';
-            advice=['Considera reduzir exposição','Evita FOMO','Aumenta reserva de cash'];
+            message='Valuations elevadas + alguma complacência — reduz exposição de forma gradual';
+            advice=['Considera reduzir exposição progressivamente','Evita FOMO em novas entradas','Aumenta reserva de cash'];
         } else {
             badgeClass='badge-sell'; badgeText='Vender / Proteger'; advClass='sell';
-            message='Euforia extrema — protege o capital';
+            message = (d.fearGreed >= 70)
+                ? 'Euforia elevada — protege o capital'
+                : 'Score muito alto (valorizações + complacência) — protege o capital';
             advice=['Realiza lucros em posições sobrevalorizadas','Aumenta significativamente cash e bonds'];
         }
 
@@ -712,8 +715,8 @@
               signal: d.vix>40?'STRONG_BUY':d.vix>28?'BUY':d.vix<13?'SELL':d.vix<17?'CAUTION':'NEUTRAL',
               desc: d.vix>35?'Pânico — stress máximo':d.vix<14?'Complacência (pré-Bust)':'Normal' },
             { key:'buffett', name:'Buffett Indicator', value:d.buffett.toFixed(0)+'%',
-              signal: d.buffett>185?'SELL':d.buffett>165?'CAUTION':d.buffett<100?'BUY':d.buffett<80?'STRONG_BUY':'NEUTRAL',
-              desc: d.buffett>180?'Bolha extrema':d.buffett>150?'Acima do normal estrutural':d.buffett<100?'Barato':'Razoável' },
+              signal: d.buffett>280?'SELL':d.buffett>230?'CAUTION':d.buffett<140?'BUY':d.buffett<100?'STRONG_BUY':'NEUTRAL',
+              desc: d.buffett>280?'Muito elevado (Z.1)':d.buffett>230?'Elevado (série alargada)':d.buffett<140?'Barato':'Razoável' },
             { key:'cape', name:'Shiller CAPE',    value:d.cape.toFixed(1),
               signal: d.cape>35?'SELL':d.cape>28?'CAUTION':d.cape<18?'BUY':d.cape<14?'STRONG_BUY':'NEUTRAL',
               desc: d.cape>35?'Zona 1929/2000':d.cape>28?'Caro historicamente':d.cape<18?'Oportunidade histórica':'Razoável' },
